@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "695942377318",
+    "project_id": "do-eat-app",
+    "storage_bucket": "do-eat-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:695942377318:android:b443de28c00185643722a7",
+        "android_client_info": {
+          "package_name": "com.example.food_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEcHxR9EYdsXVj4_HLM2Z6nG6ctm27deg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
