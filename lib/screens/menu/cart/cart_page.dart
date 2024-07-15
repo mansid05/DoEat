@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_app/screens/menu/cart/cart_manager.dart';
 import 'package:food_app/screens/profile/payment/verify_page.dart';
 
@@ -48,48 +49,59 @@ class _CartPageState extends State<CartPage> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              itemCount: _cartManager.cartItems.length,
-              itemBuilder: (context, index) {
-                final item = _cartManager.cartItems[index];
-                return Card(
-                  margin: const EdgeInsets.all(10.0),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          height: 50.0,
-                          width: 50.0,
-                          child: Image.asset(item['image'], fit: BoxFit.cover),
+            child: StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('cart').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                final cartItems = snapshot.data!.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+
+                return ListView.builder(
+                  itemCount: cartItems.length,
+                  itemBuilder: (context, index) {
+                    final item = cartItems[index];
+                    return Card(
+                      margin: const EdgeInsets.all(10.0),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              height: 50.0,
+                              width: 50.0,
+                              child: Image.network(item['image'], fit: BoxFit.cover),
+                            ),
+                            const SizedBox(width: 10.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(item['name'], style: const TextStyle(fontSize: 16.0)),
+                                  const SizedBox(height: 5.0),
+                                  Text('\$${item['price']}', style: const TextStyle(fontSize: 14.0)),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.remove, color: Color(0xFFDC143C)),
+                              onPressed: () => _cartManager.decreaseQuantity(index),
+                            ),
+                            Text('${item['quantity']}', style: const TextStyle(fontSize: 16.0)),
+                            IconButton(
+                              icon: const Icon(Icons.add, color: Color(0xFFDC143C)),
+                              onPressed: () => _cartManager.increaseQuantity(index),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Color(0xFFDC143C)),
+                              onPressed: () => _cartManager.removeItem(index),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 10.0),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(item['name'], style: const TextStyle(fontSize: 16.0)),
-                              const SizedBox(height: 5.0),
-                              Text('\₹${item['price']}', style: const TextStyle(fontSize: 14.0)),
-                            ],
-                          ),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.remove, color: Color(0xFFDC143C)),
-                          onPressed: () => _cartManager.decreaseQuantity(index),
-                        ),
-                        Text('${item['quantity']}', style: const TextStyle(fontSize: 16.0)),
-                        IconButton(
-                          icon: const Icon(Icons.add, color: Color(0xFFDC143C)),
-                          onPressed: () => _cartManager.increaseQuantity(index),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Color(0xFFDC143C)),
-                          onPressed: () => _cartManager.removeItem(index),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -122,11 +134,11 @@ class _CartPageState extends State<CartPage> {
                   ),
                 ),
                 const SizedBox(height: 10.0),
-                _buildSummaryRow('Sub Total', '\₹${_cartManager.calculateSubtotal().toStringAsFixed(2)}'),
-                _buildSummaryRow('Shipping', '\₹${_cartManager.calculateShipping().toStringAsFixed(2)}'),
-                _buildSummaryRow('Tax (10%)', '\₹${_cartManager.calculateTax().toStringAsFixed(2)}'),
+                _buildSummaryRow('Sub Total', '\$${_cartManager.calculateSubtotal().toStringAsFixed(2)}'),
+                _buildSummaryRow('Shipping', '\$${_cartManager.calculateShipping().toStringAsFixed(2)}'),
+                _buildSummaryRow('Tax (10%)', '\$${_cartManager.calculateTax().toStringAsFixed(2)}'),
                 const SizedBox(height: 10.0),
-                _buildSummaryRow('Total', '\₹${_cartManager.calculateTotal().toStringAsFixed(2)}'),
+                _buildSummaryRow('Total', '\$${_cartManager.calculateTotal().toStringAsFixed(2)}'),
                 const SizedBox(height: 20.0),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -171,6 +183,6 @@ class _CartPageState extends State<CartPage> {
 void main() {
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: CartPage(), // Use CartPage correctly here
+    home: CartPage(),
   ));
 }
