@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class UserModel {
   final String id;
@@ -6,7 +7,8 @@ class UserModel {
   final String address;
   final String phoneNumber;
   final DateTime lastActive;
-  final String profileImageUrl; // Optional: for profile image
+  final String profileImageUrl;
+  final bool isActive; // Example field for active status
 
   UserModel({
     required this.id,
@@ -16,17 +18,19 @@ class UserModel {
     required this.phoneNumber,
     required this.lastActive,
     required this.profileImageUrl,
+    this.isActive = true, // Default to true; adjust as per your logic
   });
 
-  factory UserModel.fromMap(Map<String, dynamic> data, String documentId) {
+  factory UserModel.fromMap(Map<String, dynamic> map, String id) {
     return UserModel(
-      id: documentId,
-      name: data['name'] ?? '',
-      email: data['email'] ?? '',
-      address: data['address'] ?? '',
-      phoneNumber: data['phoneNumber'] ?? '',
-      lastActive: data['lastActive']?.toDate() ?? DateTime.now(),
-      profileImageUrl: data['profileImageUrl'] ?? '', // Update based on your Firestore structure
+      id: id,
+      name: map['name'] ?? '',
+      email: map['email'] ?? '',
+      address: map['address'] ?? '',
+      phoneNumber: map['phoneNumber'] ?? '',
+      lastActive: (map['lastActive'] as Timestamp).toDate(),
+      profileImageUrl: map['profileImageUrl'] ?? '',
+      isActive: map['isActive'] ?? true,
     );
   }
 
@@ -38,37 +42,7 @@ class UserModel {
       'phoneNumber': phoneNumber,
       'lastActive': lastActive,
       'profileImageUrl': profileImageUrl,
-    };
-  }
-}
-
-
-
-
-class User {
-  final String uid;
-  final String name;
-  final String email;
-
-  User({
-    required this.uid,
-    required this.name,
-    required this.email,
-  });
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      uid: json['uid'],
-      name: json['name'],
-      email: json['email'],
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'uid': uid,
-      'name': name,
-      'email': email,
+      'isActive': isActive,
     };
   }
 }

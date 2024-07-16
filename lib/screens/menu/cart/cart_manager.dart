@@ -13,46 +13,73 @@ class CartManager extends ChangeNotifier {
     _loadCartItems();
   }
 
-  final List<Map<String, dynamic>> _cartItems = [];
+  List<Map<String, dynamic>> _cartItems = [];
 
   List<Map<String, dynamic>> get cartItems => _cartItems;
 
-  void _loadCartItems() async {
-    QuerySnapshot snapshot = await _firestore.collection('cart').get();
-    for (var doc in snapshot.docs) {
-      _cartItems.add(doc.data() as Map<String, dynamic>);
+  Future<void> _loadCartItems() async {
+    try {
+      QuerySnapshot snapshot = await _firestore.collection('cart').get();
+      _cartItems = snapshot.docs.map((doc) {
+        return {
+          'id': doc.id,
+          ...doc.data() as Map<String, dynamic>,
+        };
+      }).toList();
+      notifyListeners();
+    } catch (e) {
+      print('Error loading cart items: $e');
     }
-    notifyListeners();
   }
 
   Future<void> addItem(Map<String, dynamic> item) async {
-    DocumentReference docRef = await _firestore.collection('cart').add(item);
-    item['id'] = docRef.id;
-    _cartItems.add(item);
-    notifyListeners();
-  }
-
-  Future<void> removeItem(int index) async {
-    await _firestore.collection('cart').doc(_cartItems[index]['id']).delete();
-    _cartItems.removeAt(index);
-    notifyListeners();
-  }
-
-  Future<void> increaseQuantity(int index) async {
-    _cartItems[index]['quantity']++;
-    await _firestore.collection('cart').doc(_cartItems[index]['id']).update({
-      'quantity': _cartItems[index]['quantity']
-    });
-    notifyListeners();
-  }
-
-  Future<void> decreaseQuantity(int index) async {
-    if (_cartItems[index]['quantity'] > 1) {
-      _cartItems[index]['quantity']--;
-      await _firestore.collection('cart').doc(_cartItems[index]['id']).update({
-        'quantity': _cartItems[index]['quantity']
-      });
+    try {
+      DocumentReference docRef = await _firestore.collection('cart').add(item);
+      item['id'] = docRef.id;
+      _cartItems.add(item);
       notifyListeners();
+    } catch (e) {
+      print('Error adding item to cart: $e');
+    }
+  }
+
+  Future<void> removeItem(String itemId) async {
+    try {
+      await _firestore.collection('cart').doc(itemId).delete();
+      _cartItems.removeWhere((item) => item['id'] == itemId);
+      notifyListeners();
+    } catch (e) {
+      print('Error removing item from cart: $e');
+    }
+  }
+
+  Future<void> increaseQuantity(String itemId) async {
+    try {
+      var index = _cartItems.indexWhere((item) => item['id'] == itemId);
+      if (index != -1) {
+        _cartItems[index]['quantity']++;
+        await _firestore.collection('cart').doc(itemId).update({
+          'quantity': _cartItems[index]['quantity'],
+        });
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error increasing quantity: $e');
+    }
+  }
+
+  Future<void> decreaseQuantity(String itemId) async {
+    try {
+      var index = _cartItems.indexWhere((item) => item['id'] == itemId);
+      if (index != -1 && _cartItems[index]['quantity'] > 1) {
+        _cartItems[index]['quantity']--;
+        await _firestore.collection('cart').doc(itemId).update({
+          'quantity': _cartItems[index]['quantity'],
+        });
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error decreasing quantity: $e');
     }
   }
 
@@ -61,11 +88,11 @@ class CartManager extends ChangeNotifier {
   }
 
   double calculateShipping() {
-    return 5.0;
+    return 5.0; // Placeholder for shipping calculation
   }
 
   double calculateTax() {
-    return calculateSubtotal() * 0.10;
+    return calculateSubtotal() * 0.10; // Placeholder for tax calculation
   }
 
   double calculateTotal() {

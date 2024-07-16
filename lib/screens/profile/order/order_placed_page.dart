@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:food_app/screens/home/home_page.dart';
+import '../../home/home_page.dart';
+import 'order_history_page.dart';
 
 class OrderPlacedPage extends StatelessWidget {
-  const OrderPlacedPage({super.key});
+  const OrderPlacedPage({Key? key});
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +55,12 @@ class OrderPlacedPage extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: OutlinedButton(
                 onPressed: () {
-                  // Navigate to order details page
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => OrderHistoryPage(),
+                    ),
+                  );
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(color: Color(0xFFDC143C), width: 2.0),

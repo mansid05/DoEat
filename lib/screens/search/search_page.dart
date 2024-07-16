@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:food_app/screens/profile/profile_page.dart';
 import 'package:food_app/screens/search/filter_page.dart';
-import 'package:food_app/screens/menu/menu_page.dart';
 
-import '../home/home_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -40,37 +37,6 @@ class _SearchPageState extends State<SearchPage> {
       'restaurant': 'Restaurant 5',
     },
   ];
-
-  int _currentIndex = 1;
-
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-      switch (index) {
-        case 0:
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-          );
-          break;
-        case 1:
-        // Already on SearchPage, no action needed
-          break;
-        case 2:
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const MenuPage()),
-          );
-          break;
-        case 3:
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfilePage()),
-          );
-          break;
-      }
-    });
-  }
 
   List<Map<String, String>> filteredFoodItems = [];
 
@@ -161,41 +127,6 @@ class _SearchPageState extends State<SearchPage> {
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 30.0),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search, size: 30.0),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu, size: 30.0),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person, size: 30.0),
-            label: '',
-          ),
-        ],
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFFDC143C),
-        unselectedItemColor: Colors.grey,
-        selectedIconTheme: const IconThemeData(
-          size: 35.0, // Highlight the selected icon by increasing its size
-          color: Color(0xFFDC143C),
-        ),
-        unselectedIconTheme: const IconThemeData(
-          size: 30.0,
-        ),
-        showSelectedLabels: false, // Hide the labels for a cleaner look
-        showUnselectedLabels: false,
       ),
     );
   }

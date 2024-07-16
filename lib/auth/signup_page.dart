@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:food_app/auth/login_page.dart'; // Import your LoginPage or replace with your actual import path
+import 'package:flutter/material.dart';
+import 'package:food_app/models/User.dart';
+import 'login_page.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -98,7 +100,6 @@ class _SignupPageState extends State<SignupPage> {
                         obscureText: true,
                         color: const Color(0xFFDC143C),
                         validator: 'Please confirm your password',
-                        confirmPassword: _passwordController.text,
                       ), // Crimson color for confirm password icon
                       SizedBox(height: constraints.maxHeight * 0.02),
                       SizedBox(
@@ -171,7 +172,6 @@ class _SignupPageState extends State<SignupPage> {
         bool obscureText = false,
         Color? color,
         String? validator,
-        String? confirmPassword,
       }) {
     return TextFormField(
       controller: controller,
@@ -188,7 +188,7 @@ class _SignupPageState extends State<SignupPage> {
         if (value == null || value.isEmpty) {
           return validator ?? 'Please enter $hintText';
         }
-        if (confirmPassword != null && value != confirmPassword) {
+        if (hintText == 'Confirm Password' && value != _passwordController.text) {
           return 'Passwords do not match';
         }
         return null;
@@ -211,6 +211,22 @@ class _SignupPageState extends State<SignupPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+
+        // Create a new user document in Firestore
+        final user = UserModel(
+          id: userCredential.user!.uid,
+          name: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          address: '', // Add address field if necessary
+          phoneNumber: '', // Add phone number field if necessary
+          lastActive: DateTime.now(),
+          profileImageUrl: '', // Add profile image URL field if necessary
+        );
+
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(userCredential.user!.uid)
+            .set(user.toMap());
 
         // Navigate to the LoginPage
         Navigator.push(

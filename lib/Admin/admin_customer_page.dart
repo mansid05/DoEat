@@ -68,14 +68,48 @@ class _AdminCustomerPageState extends State<AdminCustomerPage> {
         ),
         title: Text(user.name),
         subtitle: Text(user.email),
-        trailing: Text('Active: ${user.lastActive.toString()}'), // Example: Show last active timestamp
+        trailing: Text('Active: ${user.isActive ? 'Yes' : 'No'}'), // Example: Show active status
+        onTap: () {
+          // Implement action on tapping a user
+          _showUserDetails(user);
+        },
+      ),
+    );
+  }
+
+  void _showUserDetails(UserModel user) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(user.name),
+        content: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Email: ${user.email}'),
+            Text('Address: ${user.address}'),
+            Text('Phone Number: ${user.phoneNumber}'),
+            Text('Last Active: ${user.lastActive.toString()}'),
+            Text('Profile Image URL: ${user.profileImageUrl}'),
+            Text('Active: ${user.isActive ? 'Yes' : 'No'}'),
+          ],
+        ),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('Close'),
+          ),
+        ],
       ),
     );
   }
 }
+
 void main() {
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
-    home: AdminNavigation(),
+    home: AdminCustomerPage(),
   ));
 }

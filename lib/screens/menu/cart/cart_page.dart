@@ -3,8 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_app/screens/menu/cart/cart_manager.dart';
 import 'package:food_app/screens/profile/payment/verify_page.dart';
 
+import '../../../models/CartItem.dart';
+
 class CartPage extends StatefulWidget {
-  const CartPage({super.key});
+  const CartPage({Key? key}) : super(key: key);
 
   @override
   _CartPageState createState() => _CartPageState();
@@ -17,19 +19,17 @@ class _CartPageState extends State<CartPage> {
   @override
   void initState() {
     super.initState();
-    // Add listener to update UI when the cart changes
     _cartManager.addListener(_updateCart);
   }
 
   @override
   void dispose() {
-    // Remove listener when widget is disposed
     _cartManager.removeListener(_updateCart);
     super.dispose();
   }
 
   void _updateCart() {
-    setState(() {});
+    setState(() {}); // Refresh UI when cart changes
   }
 
   @override
@@ -56,12 +56,12 @@ class _CartPageState extends State<CartPage> {
                   return const Center(child: CircularProgressIndicator());
                 }
 
-                final cartItems = snapshot.data!.docs.map((doc) => doc.data() as Map<String, dynamic>).toList();
+                List<CartItem> cartItems = snapshot.data!.docs.map((doc) => CartItem.fromFirestore(doc)).toList();
 
                 return ListView.builder(
                   itemCount: cartItems.length,
                   itemBuilder: (context, index) {
-                    final item = cartItems[index];
+                    CartItem item = cartItems[index];
                     return Card(
                       margin: const EdgeInsets.all(10.0),
                       child: Padding(
@@ -71,31 +71,31 @@ class _CartPageState extends State<CartPage> {
                             SizedBox(
                               height: 50.0,
                               width: 50.0,
-                              child: Image.network(item['image'], fit: BoxFit.cover),
+                              child: Image.network(item.image, fit: BoxFit.cover),
                             ),
                             const SizedBox(width: 10.0),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(item['name'], style: const TextStyle(fontSize: 16.0)),
+                                  Text(item.name, style: const TextStyle(fontSize: 16.0)),
                                   const SizedBox(height: 5.0),
-                                  Text('\$${item['price']}', style: const TextStyle(fontSize: 14.0)),
+                                  Text('\₹${item.price.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14.0)),
                                 ],
                               ),
                             ),
                             IconButton(
                               icon: const Icon(Icons.remove, color: Color(0xFFDC143C)),
-                              onPressed: () => _cartManager.decreaseQuantity(index),
+                              onPressed: () => _cartManager.decreaseQuantity(item.id),
                             ),
-                            Text('${item['quantity']}', style: const TextStyle(fontSize: 16.0)),
+                            Text('${item.quantity}', style: const TextStyle(fontSize: 16.0)),
                             IconButton(
                               icon: const Icon(Icons.add, color: Color(0xFFDC143C)),
-                              onPressed: () => _cartManager.increaseQuantity(index),
+                              onPressed: () => _cartManager.increaseQuantity(item.id),
                             ),
                             IconButton(
                               icon: const Icon(Icons.delete, color: Color(0xFFDC143C)),
-                              onPressed: () => _cartManager.removeItem(index),
+                              onPressed: () => _cartManager.removeItem(item.id),
                             ),
                           ],
                         ),
@@ -134,11 +134,11 @@ class _CartPageState extends State<CartPage> {
                   ),
                 ),
                 const SizedBox(height: 10.0),
-                _buildSummaryRow('Sub Total', '\$${_cartManager.calculateSubtotal().toStringAsFixed(2)}'),
-                _buildSummaryRow('Shipping', '\$${_cartManager.calculateShipping().toStringAsFixed(2)}'),
-                _buildSummaryRow('Tax (10%)', '\$${_cartManager.calculateTax().toStringAsFixed(2)}'),
+                _buildSummaryRow('Sub Total', '\₹${_cartManager.calculateSubtotal().toStringAsFixed(2)}'),
+                _buildSummaryRow('Shipping', '\₹${_cartManager.calculateShipping().toStringAsFixed(2)}'),
+                _buildSummaryRow('Tax (10%)', '\₹${_cartManager.calculateTax().toStringAsFixed(2)}'),
                 const SizedBox(height: 10.0),
-                _buildSummaryRow('Total', '\$${_cartManager.calculateTotal().toStringAsFixed(2)}'),
+                _buildSummaryRow('Total', '\₹${_cartManager.calculateTotal().toStringAsFixed(2)}'),
                 const SizedBox(height: 20.0),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -149,7 +149,7 @@ class _CartPageState extends State<CartPage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => VerifyPage(total: _cartManager.calculateTotal()),
+                        builder: (context) => VerifyPage(total: _cartManager.calculateTotal(),),
                       ),
                     );
                   },

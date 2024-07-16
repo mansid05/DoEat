@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/FoodItem.dart';
 import 'admin_navigation.dart'; // Import your AdminNavigation widget here
 
 class AdminMenuPage extends StatefulWidget {
@@ -17,8 +18,8 @@ class _AdminMenuPageState extends State<AdminMenuPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _imageController = TextEditingController();
 
-  final bool _isEditing = false;
-  late String _documentId; // To store the document ID for editing
+  bool _isEditing = false;
+  String _documentId = '';
 
   @override
   void dispose() {
@@ -97,15 +98,18 @@ class _AdminMenuPageState extends State<AdminMenuPage> {
 
   // Function to add a new food item
   void _addFoodItem() {
-    FirebaseFirestore.instance.collection('menuItems').add({
-      'name': _nameController.text,
-      'restaurant': _restaurantController.text,
-      'price': double.parse(_priceController.text),
-      'offer': _offerController.text,
-      'description': _descriptionController.text,
-      'image': _imageController.text,
-      'isFavorite': false, // Default value for new items
-    }).then((value) {
+    MenuItem newItem = MenuItem(
+      id: '',
+      name: _nameController.text,
+      restaurant: _restaurantController.text,
+      price: double.parse(_priceController.text),
+      offer: _offerController.text,
+      isFavorite: false, // Default value for new items
+      description: _descriptionController.text,
+      image: _imageController.text,
+    );
+
+    FirebaseFirestore.instance.collection('menuItems').add(newItem.toMap()).then((value) {
       Navigator.pop(context);
       // Optionally show a success message
     }).catchError((error) {
@@ -115,14 +119,18 @@ class _AdminMenuPageState extends State<AdminMenuPage> {
 
   // Function to edit an existing food item
   void _editFoodItem() {
-    FirebaseFirestore.instance.collection('menuItems').doc(_documentId).update({
-      'name': _nameController.text,
-      'restaurant': _restaurantController.text,
-      'price': double.parse(_priceController.text),
-      'offer': _offerController.text,
-      'description': _descriptionController.text,
-      'image': _imageController.text,
-    }).then((value) {
+    MenuItem updatedItem = MenuItem(
+      id: _documentId,
+      name: _nameController.text,
+      restaurant: _restaurantController.text,
+      price: double.parse(_priceController.text),
+      offer: _offerController.text,
+      isFavorite: false, // Default value for edited items
+      description: _descriptionController.text,
+      image: _imageController.text,
+    );
+
+    FirebaseFirestore.instance.collection('menuItems').doc(_documentId).update(updatedItem.toMap()).then((value) {
       Navigator.pop(context);
       // Optionally show a success message
     }).catchError((error) {

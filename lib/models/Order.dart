@@ -1,5 +1,4 @@
-
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'CartItem.dart';
 
 class Orders {
   final String id;
@@ -8,6 +7,10 @@ class Orders {
   final String status;
   final List<OrderItem> items;
   final double totalPrice;
+  final double deliveryCharges;
+  final String paymentMethod;
+  final List<CartItem> cartItems;
+  final AddressModel address; // Updated to use AddressModel
 
   Orders({
     required this.id,
@@ -16,6 +19,10 @@ class Orders {
     required this.status,
     required this.items,
     required this.totalPrice,
+    required this.deliveryCharges,
+    required this.paymentMethod,
+    required this.cartItems,
+    required this.address,
   });
 
   factory Orders.fromMap(Map<String, dynamic> data, String documentId) {
@@ -26,6 +33,10 @@ class Orders {
       status: data['status'] ?? '',
       items: (data['items'] as List<dynamic>).map((item) => OrderItem.fromMap(item)).toList(),
       totalPrice: data['totalPrice']?.toDouble() ?? 0.0,
+      deliveryCharges: data['deliveryCharges']?.toDouble() ?? 0.0,
+      paymentMethod: data['paymentMethod'] ?? '',
+      cartItems: [], // You may need to map cartItems if necessary
+      address: AddressModel.fromMap(data['address']), // Mapping AddressModel from data
     );
   }
 }
@@ -50,35 +61,22 @@ class OrderItem {
   }
 }
 
-class OrderPlaced {
-  final String id;
-  final String orderNumber;
-  final double totalPrice;
-  final String userName;
-  final String userAddress;
-  final String userPhoneNumber;
-  final List<dynamic> items;
+class AddressModel {
+  final String street;
+  final String city;
+  final String country;
 
-  OrderPlaced({
-    required this.id,
-    required this.orderNumber,
-    required this.totalPrice,
-    required this.userName,
-    required this.userAddress,
-    required this.userPhoneNumber,
-    required this.items,
+  AddressModel({
+    required this.street,
+    required this.city,
+    required this.country,
   });
 
-  factory OrderPlaced.fromMap(Map<String, dynamic> data, String documentId) {
-    return OrderPlaced(
-      id: documentId,
-      orderNumber: data['orderNumber'] ?? '',
-      totalPrice: data['totalPrice'].toDouble() ?? 0.0,
-      userName: data['userName'] ?? '',
-      userAddress: data['userAddress'] ?? '',
-      userPhoneNumber: data['userPhoneNumber'] ?? '',
-      items: data['items'] ?? [],
+  factory AddressModel.fromMap(Map<String, dynamic> data) {
+    return AddressModel(
+      street: data['street'] ?? '',
+      city: data['city'] ?? '',
+      country: data['country'] ?? '',
     );
   }
 }
-

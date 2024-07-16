@@ -8,12 +8,11 @@ import 'package:food_app/models/User.dart';
 import 'package:food_app/screens/home/favourite_page.dart';
 import 'package:food_app/screens/home/help_feedback_page.dart';
 import 'package:food_app/screens/menu/cart/cart_page.dart';
-import 'package:food_app/screens/menu/menu_page.dart';
-import 'package:food_app/screens/profile/profile_page.dart';
 import 'package:food_app/screens/profile/setting/setting_page.dart';
-import 'package:food_app/screens/search/search_page.dart';
 import '../menu/cart/cart_manager.dart';
-import '../menu/details_page.dart'; // Import the DetailsPage
+import '../menu/details_page.dart';
+import '../profile/profile_page.dart';
+import '../search/search_page.dart'; // Import the DetailsPage
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -23,40 +22,33 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0;
   late PageController _pageController;
   late Timer _timer;
   int _currentPage = 0;
   bool _isForward = true;
-
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
-    _startTimer();
-  }
 
-  void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
-      setState(() {
-        if (_isForward) {
-          if (_currentPage < 4) {
-            _currentPage++;
-          } else {
-            _isForward = false;
-            _currentPage--;
-          }
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      if (_isForward) {
+        if (_currentPage < 4) {
+          _currentPage++;
         } else {
-          if (_currentPage > 0) {
-            _currentPage--;
-          } else {
-            _isForward = true;
-            _currentPage++;
-          }
+          _isForward = false;
+          _currentPage--;
         }
-      });
+      } else {
+        if (_currentPage > 0) {
+          _currentPage--;
+        } else {
+          _isForward = true;
+          _currentPage++;
+        }
+      }
 
       _pageController.animateToPage(
         _currentPage,
@@ -71,35 +63,6 @@ class _HomePageState extends State<HomePage> {
     _timer.cancel();
     _pageController.dispose();
     super.dispose();
-  }
-
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-      switch (index) {
-        case 0:
-        // Home is already selected
-          break;
-        case 1:
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SearchPage()),
-          );
-          break;
-        case 2:
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const MenuPage()),
-          );
-          break;
-        case 3:
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfilePage()),
-          );
-          break;
-      }
-    });
   }
 
   @override
@@ -130,22 +93,21 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
   AppBar _buildAppBar() {
     return AppBar(
       leading: IconButton(
-        icon: const Icon(Icons.menu, color: Colors.black),
+        icon: const Icon(Icons.menu, color: Color(0xFFDC143C)),
         onPressed: () {
           _scaffoldKey.currentState?.openDrawer();
         },
       ),
-      title: const Text('HOME', style: TextStyle(color: Colors.black)),
+      title: const Text('HOME', style: TextStyle(color: Color(0xFFDC143C))),
       actions: [
         IconButton(
-          icon: const Icon(Icons.favorite_border, color: Colors.black),
+          icon: const Icon(Icons.favorite_border, color: Color(0xFFDC143C)),
           onPressed: () {
             Navigator.push(
               context,
@@ -154,7 +116,7 @@ class _HomePageState extends State<HomePage> {
           },
         ),
         IconButton(
-          icon: const Icon(Icons.shopping_cart, color: Colors.black),
+          icon: const Icon(Icons.shopping_cart, color: Color(0xFFDC143C)),
           onPressed: () {
             Navigator.push(
               context,
@@ -174,13 +136,14 @@ class _HomePageState extends State<HomePage> {
         padding: EdgeInsets.zero,
         children: <Widget>[
           DrawerHeader(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               color: Colors.red,
             ),
             child: StreamBuilder<DocumentSnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('users')
-                  .doc('currentUserId') // Replace with your actual user ID or use FirebaseAuth to get the current user ID
+                  .doc(
+                  'currentUserId') // Replace with your actual user ID or use FirebaseAuth to get the current user ID
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -203,15 +166,15 @@ class _HomePageState extends State<HomePage> {
                       backgroundImage: NetworkImage(user.profileImageUrl),
                       radius: 30,
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     Text(
                       user.name,
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                     ),
-                    SizedBox(height: 5),
+                    const SizedBox(height: 5),
                     Text(
                       user.email,
-                      style: TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ],
                 );
@@ -219,15 +182,15 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.home),
-            title: Text('Home'),
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
             onTap: () {
               Navigator.pop(context);
             },
           ),
           ListTile(
-            leading: Icon(Icons.search),
-            title: Text('Search'),
+            leading: const Icon(Icons.search),
+            title: const Text('Search'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -237,8 +200,8 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           ListTile(
-            leading: Icon(Icons.favorite),
-            title: Text('Favorites'),
+            leading: const Icon(Icons.favorite),
+            title: const Text('Favorites'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -248,8 +211,8 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           ListTile(
-            leading: Icon(Icons.shopping_cart),
-            title: Text('Cart'),
+            leading: const Icon(Icons.shopping_cart),
+            title: const Text('Cart'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -259,8 +222,8 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           ListTile(
-            leading: Icon(Icons.person),
-            title: Text('Profile'),
+            leading: const Icon(Icons.person),
+            title: const Text('Profile'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -269,10 +232,10 @@ class _HomePageState extends State<HomePage> {
               );
             },
           ),
-          Divider(),
+          const Divider(),
           ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('Settings'),
+            leading: const Icon(Icons.settings),
+            title: const Text('Settings'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -282,13 +245,14 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           ListTile(
-            leading: Icon(Icons.help),
-            title: Text('Help & Feedback'),
+            leading: const Icon(Icons.help),
+            title: const Text('Help & Feedback'),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const HelpFeedbackPage()),
+                MaterialPageRoute(
+                    builder: (context) => const HelpFeedbackPage()),
               );
             },
           ),
@@ -302,11 +266,11 @@ class _HomePageState extends State<HomePage> {
       stream: FirebaseFirestore.instance.collection('banners').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text('Error loading banners'));
+          return const Center(child: Text('Error loading banners'));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         List<BannerItem> banners = snapshot.data!.docs.map((doc) {
@@ -335,7 +299,7 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: TextField(
         decoration: InputDecoration(
-          prefixIcon: const Icon(Icons.search, color: Colors.black),
+          prefixIcon: const Icon(Icons.search, color: Color(0xFFDC143C)),
           hintText: 'Search for products',
           filled: true,
           fillColor: Colors.white,
@@ -345,7 +309,7 @@ class _HomePageState extends State<HomePage> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20.0),
-            borderSide: const BorderSide(color: Colors.black),
+            borderSide: const BorderSide(color: Color(0xFFDC143C)),
           ),
         ),
         onSubmitted: (query) {
@@ -363,11 +327,11 @@ class _HomePageState extends State<HomePage> {
       future: Category().getCategory(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Center(child: Text('Error loading categories'));
+          return const Center(child: Text('Error loading categories'));
         }
 
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator());
         }
 
         List<Category> categories = snapshot.data!;
@@ -381,7 +345,7 @@ class _HomePageState extends State<HomePage> {
               return SizedBox(
                 width: 100.0,
                 child: Padding(
-                  padding: EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(5),
                   child: Column(
                     children: [
                       GestureDetector(
@@ -422,7 +386,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const Icon(
             Icons.arrow_forward,
-            color: Colors.black,
+            color: Color(0xFFDC143C),
           ),
         ],
       ),
@@ -462,18 +426,33 @@ class _HomePageState extends State<HomePage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => DetailsPage(foodItem: {}),
+                    builder: (context) => DetailsPage(foodItem: {
+                      'id': foodItem.id,
+                      'image': foodItem.image,
+                      'name': foodItem.name,
+                      'price': foodItem.price,
+                      'description': foodItem.description,
+                      // Add any other fields you need
+                    }),
                   ),
                 );
               },
               child: Card(
+                elevation: 3, // Add elevation for a shadow effect
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Image.network(
-                      foodItem.image,
-                      height: 120.0,
-                      fit: BoxFit.cover,
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(
+                          10)),
+                      child: Image.network(
+                        foodItem.image,
+                        height: 120.0,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -506,9 +485,14 @@ class _HomePageState extends State<HomePage> {
                               });
                             },
                             style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 12.0),
                               backgroundColor: const Color(0xFFDC143C),
+                              minimumSize: const Size(70.0, 36.0),
                             ),
-                            child: const Text('ADD'),
+                            child: const Text(
+                              'ADD',
+                              style: TextStyle(fontSize: 12.0, color: Colors.white),
+                            ),
                           ),
                         ],
                       ),
@@ -525,8 +509,10 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildPopularCarousel() {
     final cartManager = CartManager();
+
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('popular_items').snapshots(),
+      stream: FirebaseFirestore.instance.collection('popular_items')
+          .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Center(child: Text('Error loading popular items'));
@@ -541,7 +527,7 @@ class _HomePageState extends State<HomePage> {
         }).toList();
 
         return SizedBox(
-          height: 150.0,
+          height: 250.0, // Adjusted height to prevent overflow
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: popularItems.length,
@@ -555,18 +541,33 @@ class _HomePageState extends State<HomePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => DetailsPage(foodItem: {}),
+                        builder: (context) => DetailsPage(foodItem: {
+                          'id': foodItem.id,
+                          'image': foodItem.image,
+                          'name': foodItem.name,
+                          'price': foodItem.price,
+                          'description': foodItem.description,
+                          // Add any other fields you need
+                        }),
                       ),
                     );
                   },
                   child: Card(
+                    elevation: 3, // Add elevation for a shadow effect
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Image.network(
-                          foodItem.image,
-                          height: 100.0,
-                          fit: BoxFit.cover,
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(10)),
+                          child: Image.network(
+                            foodItem.image,
+                            height: 120.0, // Adjusted image height
+                            fit: BoxFit.cover,
+                          ),
                         ),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
@@ -599,9 +600,14 @@ class _HomePageState extends State<HomePage> {
                                   });
                                 },
                                 style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
                                   backgroundColor: const Color(0xFFDC143C),
+                                  minimumSize: const Size(70.0, 36.0),
                                 ),
-                                child: const Text('ADD'),
+                                child: const Text(
+                                  'ADD',
+                                  style: TextStyle(fontSize: 12.0, color: Colors.white),
+                                ),
                               ),
                             ],
                           ),
@@ -617,31 +623,5 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
-  BottomNavigationBar _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      currentIndex: _currentIndex,
-      onTap: _onTabTapped,
-      selectedItemColor: const Color(0xFFDC143C),
-      unselectedItemColor: Colors.grey,
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.search),
-          label: 'Search',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.restaurant_menu),
-          label: 'Menu',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
-        ),
-      ],
-    );
-  }
 }
+

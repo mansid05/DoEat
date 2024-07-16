@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_app/screens/menu/cart/cart_manager.dart';
-
+import 'package:food_app/screens/profile/payment/verify_page.dart';
 import 'cart/cart_page.dart';
 
 class DetailsPage extends StatefulWidget {
@@ -28,7 +28,7 @@ class _DetailsPageState extends State<DetailsPage> {
     setState(() {
       isFavorite = !isFavorite;
       // Update Firestore with the new favorite status
-      FirebaseFirestore.instance.collection('foodItems').doc(widget.foodItem['id']).update({
+      FirebaseFirestore.instance.collection('menuItems').doc(widget.foodItem['id']).update({
         'isFavorite': isFavorite,
       });
     });
@@ -117,7 +117,7 @@ class _DetailsPageState extends State<DetailsPage> {
                     ],
                   ),
                   Text(
-                    '\$${widget.foodItem['price']}',
+                    '\₹${price.toStringAsFixed(2)}',
                     style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Color(0xFFDC143C)),
                   ),
                 ],
@@ -209,7 +209,7 @@ class _DetailsPageState extends State<DetailsPage> {
                 ],
               ),
               const SizedBox(height: 16.0),
-              Text('Total Price: \$${totalPrice.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+              Text('Total Price: \₹${totalPrice.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -218,9 +218,10 @@ class _DetailsPageState extends State<DetailsPage> {
                     onPressed: () {
                       // Handle add to cart
                       CartManager().addItem({
+                        'id': widget.foodItem['id'],
                         'image': widget.foodItem['image'],
                         'name': widget.foodItem['name'],
-                        'price': widget.foodItem['price'],
+                        'price': price,
                         'quantity': quantity,
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -230,12 +231,18 @@ class _DetailsPageState extends State<DetailsPage> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
                       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                      side: const BorderSide(color: Color(0xFFDC143C)),
                     ),
                     child: const Text('Add to Cart', style: TextStyle(color: Color(0xFFDC143C))),
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      // Handle place order
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VerifyPage(total: totalPrice,),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFDC143C),

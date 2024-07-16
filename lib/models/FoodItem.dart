@@ -96,3 +96,28 @@ class PopularItem extends FoodItem {
     );
   }
 }
+class MenuItem extends FoodItem {
+  MenuItem({
+    required super.id,
+    required super.name,
+    required super.restaurant,
+    required super.price,
+    required super.offer,
+    required super.isFavorite,
+    required super.description,
+    required super.image,
+  });
+
+  factory MenuItem.fromMap(Map<String, dynamic> data, String documentId) {
+    return MenuItem(
+      id: documentId,
+      name: data['name'] ?? '',
+      restaurant: data['restaurant'] ?? '',
+      price: data['price']?.toDouble() ?? 0.0,
+      offer: data['offer'] ?? '',
+      isFavorite: data['isFavorite'] ?? false,
+      description: data['description'] ?? '',
+      image: data['image'] ?? '',
+    );
+  }
+}

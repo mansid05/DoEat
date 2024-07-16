@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:food_app/screens/home/home_page.dart';
+import 'package:food_app/screens/user_navigation.dart';
 
 class ThreeFragmentPage extends StatefulWidget {
   const ThreeFragmentPage({super.key});
@@ -122,7 +122,7 @@ class _ThreeFragmentPageState extends State<ThreeFragmentPage> {
   void _navigateToHomePage() {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
+      MaterialPageRoute(builder: (context) => const UserNavigation()),
     );
   }
 

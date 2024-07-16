@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart'; // Make sure to include firebase_core
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:food_app/Admin/admin_navigation.dart';
@@ -34,6 +36,7 @@ class _LoginPageState extends State<LoginPage> {
       print('Message clicked!');
     });
   }
+
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -231,31 +234,43 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     setState(() {
       if (_formKey.currentState!.validate()) {
-        // Normal user login
-        if (_emailController.text == 'admin@gmail.com' &&
-            _passwordController.text == 'admin') {
-          // Admin login
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AdminNavigation(), // Replace with your admin page
-            ),
-          );
-        } else {
-          // Normal user login logic (replace with actual logic)
-          bool isLoggedIn = true;
-          if (isLoggedIn) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ThreeFragmentPage(),
-              ),
-            );
+        // Attempt Firebase authentication
+        FirebaseAuth.instance
+            .signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        )
+            .then((UserCredential userCredential) {
+          if (userCredential.user != null) {
+            // Successful login
+            if (_emailController.text == 'admin@gmail.com') {
+              // Navigate to AdminPage
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AdminNavigation(), // Replace with your admin page
+                ),
+              );
+            } else {
+              // Normal user login
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ThreeFragmentPage(), // Replace with your user page
+                ),
+              );
+            }
           }
-        }
+        }).catchError((error) {
+          // Handle login errors
+          setState(() {
+            _emailOrNumberError = 'Invalid email or password';
+            _passwordError = 'Invalid email or password';
+          });
+        });
       } else {
         // Validation failed
         setState(() {
@@ -269,10 +284,10 @@ class _LoginPageState extends State<LoginPage> {
     });
   }
 
-  void _adminLogin() {
+  void _adminLogin() async {
     setState(() {
-      if (_emailController.text == 'admin@gmail.com' &&
-          _passwordController.text == 'admin') {
+      if (_emailController.text.trim() == 'admin@gmail.com' &&
+          _passwordController.text.trim() == 'admin@123') {
         // Navigate to AdminPage
         Navigator.push(
           context,
@@ -282,8 +297,10 @@ class _LoginPageState extends State<LoginPage> {
         );
       } else {
         // Clear fields and show error for incorrect admin credentials
-        _emailOrNumberError = 'Invalid admin credentials';
-        _passwordError = 'Invalid admin credentials';
+        setState(() {
+          _emailOrNumberError = 'Invalid admin credentials';
+          _passwordError = 'Invalid admin credentials';
+        });
       }
     });
   }
@@ -297,7 +314,9 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   runApp(const MaterialApp(
     debugShowCheckedModeBanner: false,
     home: LoginPage(),

@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_app/screens/menu/cart/cart_manager.dart';
 import 'package:food_app/screens/menu/cart/cart_page.dart';
-import 'package:food_app/screens/profile/profile_page.dart';
 import 'package:food_app/screens/search/filter_page.dart';
-import 'package:food_app/screens/home/home_page.dart';
-import 'package:food_app/screens/search/search_page.dart';
-
 import '../../models/FoodItem.dart';
+import 'details_page.dart';
 
 void main() {
   runApp(const MaterialApp(
@@ -24,39 +21,9 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-  int _currentIndex = 2;
   String? _selectedCategory;
   String? _selectedSortOption;
-  List<DropdownMenuItem<String>> _categoryItems = [];
   List<QueryDocumentSnapshot> _foodItems = [];
-
-  void _onTabTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-      switch (index) {
-        case 0:
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-          );
-          break;
-        case 1:
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const SearchPage()),
-          );
-          break;
-        case 2:
-          break;
-        case 3:
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const ProfilePage()),
-          );
-          break;
-      }
-    });
-  }
 
   void _sortFoodItems(String? sortOption) {
     if (sortOption == 'Low to High') {
@@ -114,7 +81,7 @@ class _MenuPageState extends State<MenuPage> {
           children: [
             _buildSearchBar(),
             const SizedBox(height: 10.0),
-            _buildCategoryAndSortDropdowns(),
+            _buildSortDropdown(),
             const SizedBox(height: 10.0),
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('menuItems').snapshots(),
@@ -154,41 +121,6 @@ class _MenuPageState extends State<MenuPage> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 30.0),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search, size: 30.0),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu, size: 30.0),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person, size: 30.0),
-            label: '',
-          ),
-        ],
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFFDC143C),
-        unselectedItemColor: Colors.grey,
-        selectedIconTheme: const IconThemeData(
-          size: 35.0,
-          color: Color(0xFFDC143C),
-        ),
-        unselectedIconTheme: const IconThemeData(
-          size: 30.0,
-        ),
-        showSelectedLabels: false,
-        showUnselectedLabels: false,
-      ),
     );
   }
 
@@ -207,7 +139,7 @@ class _MenuPageState extends State<MenuPage> {
     );
   }
 
-  Widget _buildCategoryAndSortDropdowns() {
+  Widget _buildSortDropdown() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Row(
@@ -254,16 +186,34 @@ class _MenuPageState extends State<MenuPage> {
   Widget _buildMenuCard(QueryDocumentSnapshot doc) {
     var data = doc.data() as Map<String, dynamic>;
     var foodItem = FoodItem(
+      id: doc.id,
       name: data['name'],
       restaurant: data['restaurant'],
-      image: data['image'],
-      price: data['price'],
+      price: (data['price'] as num).toDouble(),
       offer: data['offer'],
-      id: data['id'],
-      isFavorite: false,
+      isFavorite: data['isFavorite'] ?? false,
       description: data['description'],
+      image: data['image'],
     );
-    return MenuCard(foodItem: foodItem);
+
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailsPage(foodItem: {
+              'id': foodItem.id,
+              'image': foodItem.image,
+              'name': foodItem.name,
+              'price': foodItem.price,
+              'description': foodItem.description,
+              // Add any other fields you need
+            }),
+          ),
+        );
+      },
+      child: MenuCard(foodItem: foodItem),
+    );
   }
 }
 
@@ -332,7 +282,7 @@ class _MenuCardState extends State<MenuCard> {
             padding: const EdgeInsets.all(8.0),
             child: Image.network(
               widget.foodItem.image,
-              height: 100.00,
+              height: 100.0,
               width: double.infinity,
               fit: BoxFit.cover,
             ),

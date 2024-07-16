@@ -33,7 +33,7 @@ class _AdminManageOrderPageState extends State<AdminManageOrderPage> {
           }
 
           var orders = snapshot.data!.docs.map((doc) {
-            return OrderPlaced.fromMap(doc.data() as Map<String, dynamic>, doc.id);
+            return orderPlaced.fromMap(doc.data() as Map<String, dynamic>, doc.id);
           }).toList();
 
           return ListView.builder(

@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import '../../../models/Address.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false,
+    home: AddressPage(),
+  ));
+}
 
 class AddressPage extends StatefulWidget {
-  const AddressPage({super.key});
+  const AddressPage({Key? key}) : super(key: key);
 
   @override
   _AddressPageState createState() => _AddressPageState();
@@ -30,17 +41,19 @@ class _AddressPageState extends State<AddressPage> {
 
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
+      Address addressModel = Address(
+        firstName: _firstNameController.text,
+        lastName: _lastNameController.text,
+        address: _addressController.text,
+        phoneNumber: _phoneNumberController.text,
+        city: _selectedCity ?? '',
+        state: _selectedState ?? '',
+      );
+
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => SummaryPage(
-            firstName: _firstNameController.text,
-            lastName: _lastNameController.text,
-            address: _addressController.text,
-            phoneNumber: _phoneNumberController.text,
-            city: _selectedCity ?? '',
-            state: _selectedState ?? '',
-          ),
+          builder: (context) => SummaryPage(addressModel: addressModel),
         ),
       );
     }
@@ -189,22 +202,9 @@ class _AddressPageState extends State<AddressPage> {
 }
 
 class SummaryPage extends StatelessWidget {
-  final String firstName;
-  final String lastName;
-  final String address;
-  final String phoneNumber;
-  final String city;
-  final String state;
+  final Address addressModel;
 
-  const SummaryPage({
-    required this.firstName,
-    required this.lastName,
-    required this.address,
-    required this.phoneNumber,
-    required this.city,
-    required this.state,
-    super.key,
-  });
+  const SummaryPage({Key? key, required this.addressModel}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -226,17 +226,17 @@ class SummaryPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSummaryText('First Name', firstName),
+            _buildSummaryText('First Name', addressModel.firstName),
             const SizedBox(height: 10),
-            _buildSummaryText('Last Name', lastName),
+            _buildSummaryText('Last Name', addressModel.lastName),
             const SizedBox(height: 10),
-            _buildSummaryText('Address', address),
+            _buildSummaryText('Address', addressModel.address),
             const SizedBox(height: 10),
-            _buildSummaryText('Phone Number', phoneNumber),
+            _buildSummaryText('Phone Number', addressModel.phoneNumber),
             const SizedBox(height: 10),
-            _buildSummaryText('City', city),
+            _buildSummaryText('City', addressModel.city),
             const SizedBox(height: 10),
-            _buildSummaryText('State', state),
+            _buildSummaryText('State', addressModel.state),
           ],
         ),
       ),
@@ -251,11 +251,4 @@ class SummaryPage extends StatelessWidget {
       ],
     );
   }
-}
-
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: AddressPage(),
-  ));
 }
