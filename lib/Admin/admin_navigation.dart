@@ -6,7 +6,7 @@ import 'admin_menu_page.dart';
 import 'admin_customer_page.dart';
 
 class AdminNavigation extends StatefulWidget {
-  const AdminNavigation({Key? key}) : super(key: key);
+  const AdminNavigation({super.key});
 
   @override
   _AdminDashboardState createState() => _AdminDashboardState();
@@ -18,8 +18,8 @@ class _AdminDashboardState extends State<AdminNavigation> {
   final List<Widget> _pages = [
     const AdminHomePage(),
     const AdminMenuPage(),
-    const AdminCustomerPage(),
-    const AdminManageOrderPage(),
+     AdminCustomerPage(),
+     AdminManageOrderPage(),
     const ShowCalendar(),
   ];
 

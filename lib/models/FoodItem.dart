@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class FoodItem {
   final String id;
   final String name;
@@ -119,5 +121,16 @@ class MenuItem extends FoodItem {
       description: data['description'] ?? '',
       image: data['image'] ?? '',
     );
+  }
+  factory MenuItem.fromSnapshot(DocumentSnapshot snapshot) {
+    final data = snapshot.data() as Map<String, dynamic>;
+    return MenuItem.fromMap(data, snapshot.id);
+  }
+
+  static Future<List<MenuItem>> getCategory(String name) async {
+    var instance = FirebaseFirestore.instance;
+    var querySnapshot = await instance.collection("menus").where("category", isEqualTo: name).get();
+    var list = querySnapshot.docs.map((doc) => MenuItem.fromSnapshot(doc)).toList();
+    return list;
   }
 }

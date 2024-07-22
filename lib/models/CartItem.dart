@@ -15,14 +15,13 @@ class CartItem {
     required this.image,
   });
 
-  // Factory method to create CartItem from a Firestore document
   factory CartItem.fromFirestore(DocumentSnapshot doc) {
-    Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+    Map data = doc.data() as Map;
     return CartItem(
       id: doc.id,
       name: data['name'] ?? '',
-      price: (data['price'] ?? 0.0).toDouble(),
-      quantity: (data['quantity'] ?? 0).toInt(),
+      price: data['price']?.toDouble() ?? 0.0,
+      quantity: data['quantity'] ?? 0,
       image: data['image'] ?? '',
     );
   }

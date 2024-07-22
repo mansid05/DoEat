@@ -5,7 +5,7 @@ import 'home/home_page.dart';
 import 'menu/menu_page.dart';
 
 class UserNavigation extends StatefulWidget {
-  const UserNavigation({Key? key}) : super(key: key);
+  const UserNavigation({super.key});
 
   @override
   _UserDashboardState createState() => _UserDashboardState();

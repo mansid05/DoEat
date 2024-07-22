@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:food_app/screens/profile/address/address_page.dart';
-import 'package:food_app/screens/profile/order/order_history_page.dart';
-import 'package:food_app/screens/profile/payment/payment_page.dart';
 import 'package:food_app/screens/profile/setting/language_page.dart';
 import 'package:food_app/screens/profile/setting/setting_page.dart';
 import 'package:food_app/screens/home/favourite_page.dart';
-import 'package:food_app/screens/home/home_page.dart';
-import 'package:food_app/screens/menu/menu_page.dart';
-import 'package:food_app/screens/search/search_page.dart';
+
+import '../../auth/login_page.dart';
+import '../home/home_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -179,72 +177,12 @@ class _ProfilePageState extends State<ProfilePage> {
               Icons.shopping_bag, 'My Orders',
               Icons.language, 'Language',
               Icons.settings, 'Settings',
-
             ),
             const SizedBox(height: 12.0),
             _buildCard(Icons.logout, 'Logout', color: Colors.red),
             const SizedBox(height: 20.0),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        currentIndex: 3,
-        onTap: (index) {
-          switch (index) {
-            case 0:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const HomePage()),
-              );
-              break;
-            case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const SearchPage()),
-              );
-              break;
-            case 2:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => const MenuPage()),
-              );
-              break;
-            case 3:
-            // Already on Profile Page, no action needed
-              break;
-          }
-        },
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, size: 30.0),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search, size: 30.0),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.menu, size: 30.0),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person, size: 30.0),
-            label: '',
-          ),
-        ],
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFFDC143C),
-        unselectedItemColor: Colors.grey,
-        selectedIconTheme: const IconThemeData(
-          size: 35.0, // Highlight the selected icon by increasing its size
-          color: Color(0xFFDC143C),
-        ),
-        unselectedIconTheme: const IconThemeData(
-          size: 30.0,
-        ),
-        showSelectedLabels: false, // Hide the labels for a cleaner look
-        showUnselectedLabels: false,
       ),
     );
   }
@@ -257,19 +195,6 @@ class _ProfilePageState extends State<ProfilePage> {
       elevation: 2.0,
       child: Column(
         children: [
-          ListTile(
-            leading: Icon(icon1, color: const Color(0xFFDC143C)),
-            title: Text(title1),
-            trailing: const Icon(Icons.chevron_right, color: Color(0xFFDC143C)),
-            onTap: () {
-              // Navigate to PaymentPage
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PaymentPage(total: 0)),
-              );
-            },
-          ),
-          const Divider(height: 0),
           ListTile(
             leading: Icon(icon2, color: const Color(0xFFDC143C)),
             title: Text(title2),
@@ -315,11 +240,7 @@ class _ProfilePageState extends State<ProfilePage> {
             title: Text(title2),
             trailing: const Icon(Icons.chevron_right, color: Color(0xFFDC143C)),
             onTap: () {
-              // Navigate to OrderPage
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => OrderHistoryPage()),
-              );
+
             },
           ),
           const Divider(height: 0),
@@ -373,7 +294,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     TextButton(
                       onPressed: () {
                         // Implement logout functionality
-                        Navigator.of(context).popUntil(ModalRoute.withName('/')); // Navigate back to the first route
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginPage()),
+                              (Route<dynamic> route) => false,
+                        );
                       },
                       child: const Text('Logout', style: TextStyle(color: Colors.red)),
                     ),

@@ -18,8 +18,8 @@ class _AdminMenuPageState extends State<AdminMenuPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _imageController = TextEditingController();
 
-  bool _isEditing = false;
-  String _documentId = '';
+  final bool _isEditing = false;
+  final String _documentId = '';
 
   @override
   void dispose() {

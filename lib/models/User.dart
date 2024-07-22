@@ -8,7 +8,7 @@ class UserModel {
   final String phoneNumber;
   final DateTime lastActive;
   final String profileImageUrl;
-  final bool isActive; // Example field for active status
+  final bool isActive;
 
   UserModel({
     required this.id,
@@ -18,7 +18,7 @@ class UserModel {
     required this.phoneNumber,
     required this.lastActive,
     required this.profileImageUrl,
-    this.isActive = true, // Default to true; adjust as per your logic
+    required this.isActive,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> map, String id) {
@@ -30,7 +30,7 @@ class UserModel {
       phoneNumber: map['phoneNumber'] ?? '',
       lastActive: (map['lastActive'] as Timestamp).toDate(),
       profileImageUrl: map['profileImageUrl'] ?? '',
-      isActive: map['isActive'] ?? true,
+      isActive: map['isActive'] ?? false,
     );
   }
 

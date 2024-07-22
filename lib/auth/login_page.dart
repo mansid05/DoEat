@@ -7,7 +7,9 @@ import 'package:food_app/auth/signup_page.dart'; // Replace with your actual imp
 import 'package:food_app/screens/privacy_policy_page.dart'; // Replace with your actual import path
 import 'package:food_app/screens/three_fragment_page.dart';
 
-import '../Admin/admin_home_page.dart'; // Replace with your actual import path
+import '../Admin/admin_home_page.dart';
+import '../screens/home/home_page.dart';
+import 'AuthService.dart'; // Replace with your actual import path
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -43,6 +45,7 @@ class _LoginPageState extends State<LoginPage> {
 
   String? _emailOrNumberError;
   String? _passwordError;
+  bool _obscurePassword = true; // State variable for password visibility
 
   @override
   void dispose() {
@@ -121,24 +124,13 @@ class _LoginPageState extends State<LoginPage> {
                     },
                   ),
                   const SizedBox(height: 20.0),
-                  TextFormField(
+                  _buildTextFieldWithIcon(
+                    Icons.lock,
+                    'Password',
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(
-                        Icons.lock,
-                        color: Color(0xFFDC143C), // Icon color
-                      ),
-                      hintText: 'Password',
-                      errorText: _passwordError,
-                      border: const OutlineInputBorder(),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter Password';
-                      }
-                      return null;
-                    },
+                    obscureText: _obscurePassword,
+                    color: const Color(0xFFDC143C),
+                    validator: 'Please enter Password',
                   ),
                   const SizedBox(height: 20.0),
                   SizedBox(
@@ -184,12 +176,49 @@ class _LoginPageState extends State<LoginPage> {
                   const SizedBox(height: 20.0),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      _buildSocialButton('assets/logos/facebook_logo.png', 40.0),
-                      const SizedBox(width: 20.0), // Space between logos
-                      _buildSocialButton('assets/logos/google_logo.png', 40.0),
-                      const SizedBox(width: 20.0), // Space between logos
-                      _buildSocialButton('assets/logos/twitter_logo.png', 40.0),
+                    children: [
+                      SizedBox(
+                        height: 40,
+                        child: Card(
+                          child: GestureDetector(
+                            onTap: () async {
+                              await AuthService().siginWithGoogle().then((value) {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const HomePage()),
+                                );
+                              }).catchError((error) {
+                                print('Error signing in with Google: $error');
+                                // Handle error with AlertDialog or other method
+                              });
+                            },
+                            child: SizedBox(
+                              width: 250,
+                              height: 100,
+                              child: Padding(
+                                padding: const EdgeInsets.all(5),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Image.asset(
+                                      "assets/logos/google_logo.png",
+                                      width: 50,
+                                      height: 50,
+                                    ),
+                                    const Text(
+                                      "Sign In With Google",
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 20.0),
@@ -231,6 +260,48 @@ class _LoginPageState extends State<LoginPage> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTextFieldWithIcon(
+      IconData icon,
+      String hintText, {
+        TextEditingController? controller,
+        bool obscureText = false,
+        Color? color,
+        String? validator,
+      }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        prefixIcon: Icon(
+          icon,
+          color: color,
+        ),
+        suffixIcon: hintText == 'Password'
+            ? IconButton(
+          icon: Icon(
+            obscureText ? Icons.visibility : Icons.visibility_off,
+            color: color,
+          ),
+          onPressed: () {
+            setState(() {
+              _obscurePassword = !obscureText;
+            });
+          },
+        )
+            : null,
+        hintText: hintText,
+        errorText: hintText == 'Password' ? _passwordError : null,
+        border: const OutlineInputBorder(),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return validator ?? 'Please enter $hintText';
+        }
+        return null;
+      },
     );
   }
 

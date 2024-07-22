@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class OrderDetailsPage extends StatelessWidget {
   final String orderId;
 
-  const OrderDetailsPage({required this.orderId, Key? key}) : super(key: key);
+  const OrderDetailsPage({required this.orderId, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +33,7 @@ class OrderDetailsPage extends StatelessWidget {
             padding: const EdgeInsets.all(16.0),
             child: ListView(
               children: [
-                Text('Order ID: ${orderId}', style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+                Text('Order ID: $orderId', style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10.0),
                 Text('User Name: ${orderData['userName']}', style: const TextStyle(fontSize: 18.0)),
                 const SizedBox(height: 10.0),
@@ -41,7 +41,7 @@ class OrderDetailsPage extends StatelessWidget {
                 const SizedBox(height: 10.0),
                 Text('Phone Number: ${orderData['userPhoneNumber']}', style: const TextStyle(fontSize: 18.0)),
                 const SizedBox(height: 10.0),
-                Text('Total Price: \₹${orderData['totalPrice'].toStringAsFixed(2)}', style: const TextStyle(fontSize: 18.0)),
+                Text('Total Price: ₹${orderData['totalPrice'].toStringAsFixed(2)}', style: const TextStyle(fontSize: 18.0)),
                 const SizedBox(height: 10.0),
                 const Text('Items:', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10.0),
@@ -49,7 +49,7 @@ class OrderDetailsPage extends StatelessWidget {
                   return ListTile(
                     title: Text(item['name']),
                     subtitle: Text('Quantity: ${item['quantity']}'),
-                    trailing: Text('\₹${item['price'].toStringAsFixed(2)}'),
+                    trailing: Text('₹${item['price'].toStringAsFixed(2)}'),
                   );
                 }).toList(),
               ],

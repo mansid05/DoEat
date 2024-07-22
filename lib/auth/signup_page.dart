@@ -1,7 +1,9 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:food_app/models/User.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/User.dart';
+import '../screens/home/home_page.dart';
+import 'AuthService.dart';
 import 'login_page.dart';
 
 class SignupPage extends StatefulWidget {
@@ -18,6 +20,9 @@ class _SignupPageState extends State<SignupPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -33,12 +38,9 @@ class _SignupPageState extends State<SignupPage> {
       appBar: AppBar(
         title: const Text('SIGN UP', style: TextStyle(color: Color(0xFFDC143C))),
         leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Color(0xFFDC143C), // Crimson color for back arrow
-          ),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFFDC143C)),
           onPressed: () {
-            Navigator.of(context).pop(); // Navigate back
+            Navigator.of(context).pop();
           },
         ),
       ),
@@ -61,9 +63,9 @@ class _SignupPageState extends State<SignupPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      SizedBox(height: constraints.maxHeight * 0.02), // Reduced height
+                      SizedBox(height: constraints.maxHeight * 0.02),
                       Image.asset(
-                        'assets/logos/food_icon.png', // Replace with your food icon asset path
+                        'assets/logos/food_icon.png',
                         width: constraints.maxWidth * 0.3,
                         height: constraints.maxWidth * 0.3,
                       ),
@@ -74,7 +76,7 @@ class _SignupPageState extends State<SignupPage> {
                         controller: _nameController,
                         color: const Color(0xFFDC143C),
                         validator: 'Please enter your name',
-                      ), // Crimson color for name icon
+                      ),
                       SizedBox(height: constraints.maxHeight * 0.02),
                       _buildTextFieldWithIcon(
                         Icons.email,
@@ -82,35 +84,43 @@ class _SignupPageState extends State<SignupPage> {
                         controller: _emailController,
                         color: const Color(0xFFDC143C),
                         validator: 'Please enter your email',
-                      ), // Crimson color for email icon
+                      ),
                       SizedBox(height: constraints.maxHeight * 0.02),
                       _buildTextFieldWithIcon(
                         Icons.lock,
                         'Password',
                         controller: _passwordController,
-                        obscureText: true,
+                        obscureText: _obscurePassword,
                         color: const Color(0xFFDC143C),
-                        validator: 'Please enter password',
-                      ), // Crimson color for password icon
+                        validator: 'Please enter a password',
+                        toggleVisibility: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
                       SizedBox(height: constraints.maxHeight * 0.02),
                       _buildTextFieldWithIcon(
                         Icons.lock,
                         'Confirm Password',
                         controller: _confirmPasswordController,
-                        obscureText: true,
+                        obscureText: _obscureConfirmPassword,
                         color: const Color(0xFFDC143C),
                         validator: 'Please confirm your password',
-                      ), // Crimson color for confirm password icon
+                        toggleVisibility: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
+                      ),
                       SizedBox(height: constraints.maxHeight * 0.02),
                       SizedBox(
-                        width: double.infinity, // Make button full width
+                        width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
-                            _submitForm();
-                          },
+                          onPressed: _submitForm,
                           style: ElevatedButton.styleFrom(
                             foregroundColor: Colors.white,
-                            backgroundColor: const Color(0xFFDC143C), // Crimson color for button background
+                            backgroundColor: const Color(0xFFDC143C),
                           ),
                           child: const Text('Sign Up'),
                         ),
@@ -120,20 +130,18 @@ class _SignupPageState extends State<SignupPage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => const LoginPage()), // Navigate to LoginPage
+                            MaterialPageRoute(builder: (context) => const LoginPage()),
                           );
                         },
                         child: const Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Text(
-                              "Already have an account? ",
-                            ),
+                            Text("Already have an account? "),
                             Text(
                               'Log In',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFFDC143C), // Crimson color for Log In text
+                                color: Color(0xFFDC143C),
                                 decoration: TextDecoration.underline,
                               ),
                             ),
@@ -145,12 +153,49 @@ class _SignupPageState extends State<SignupPage> {
                       SizedBox(height: constraints.maxHeight * 0.02),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          _buildSocialButton('assets/logos/facebook_logo.png', constraints.maxWidth * 0.1),
-                          SizedBox(width: constraints.maxWidth * 0.05), // Space between logos
-                          _buildSocialButton('assets/logos/google_logo.png', constraints.maxWidth * 0.1),
-                          SizedBox(width: constraints.maxWidth * 0.05), // Space between logos
-                          _buildSocialButton('assets/logos/twitter_logo.png', constraints.maxWidth * 0.1),
+                        children: [
+                          SizedBox(
+                            height: 40,
+                            child: Card(
+                              child: GestureDetector(
+                                onTap: () async {
+                                  await AuthService().siginWithGoogle().then((value) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => const HomePage()),
+                                    );
+                                  }).catchError((error) {
+                                    print('Error signing in with Google: $error');
+                                    // Handle error with AlertDialog or other method
+                                  });
+                                },
+                                child: SizedBox(
+                                  width: 250,
+                                  height: 100,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(5),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      children: [
+                                        Image.asset(
+                                          "assets/logos/google_logo.png",
+                                          width: 50,
+                                          height: 50,
+                                        ),
+                                        const Text(
+                                          "Sign In With Google",
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                       SizedBox(height: constraints.maxHeight * 0.02),
@@ -172,16 +217,20 @@ class _SignupPageState extends State<SignupPage> {
         bool obscureText = false,
         Color? color,
         String? validator,
+        VoidCallback? toggleVisibility,
       }) {
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
       decoration: InputDecoration(
-        prefixIcon: Icon(
-          icon,
-          color: color, // Icon color
-        ),
+        prefixIcon: Icon(icon, color: color),
         hintText: hintText,
+        suffixIcon: toggleVisibility != null
+            ? IconButton(
+          icon: Icon(obscureText ? Icons.visibility : Icons.visibility_off, color: color),
+          onPressed: toggleVisibility,
+        )
+            : null,
         border: const OutlineInputBorder(),
       ),
       validator: (value) {
@@ -193,14 +242,6 @@ class _SignupPageState extends State<SignupPage> {
         }
         return null;
       },
-    );
-  }
-
-  Widget _buildSocialButton(String imagePath, double size) {
-    return Image.asset(
-      imagePath,
-      width: size, // Adjust size as needed
-      height: size,
     );
   }
 
@@ -217,18 +258,16 @@ class _SignupPageState extends State<SignupPage> {
           id: userCredential.user!.uid,
           name: _nameController.text.trim(),
           email: _emailController.text.trim(),
-          address: '', // Add address field if necessary
-          phoneNumber: '', // Add phone number field if necessary
+          address: '',
+          phoneNumber: '',
           lastActive: DateTime.now(),
-          profileImageUrl: '', // Add profile image URL field if necessary
+          profileImageUrl: '',
+          isActive: false,
         );
 
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(userCredential.user!.uid)
-            .set(user.toMap());
+        await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).set(user.toMap());
 
-        // Navigate to the LoginPage
+        // Navigate to the LoginPage after successful sign-up
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const LoginPage()),
@@ -236,17 +275,14 @@ class _SignupPageState extends State<SignupPage> {
       } catch (e) {
         // Handle errors here
         print('Error signing up: $e');
-        // Display error message to the user using ScaffoldMessenger or showDialog
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Error'),
-            content: const Text('Failed to sign up. Please try again later.'),
-            actions: <Widget>[
+            content: const Text('Failed to sign up. Please try again.'),
+            actions: [
               TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
+                onPressed: () => Navigator.pop(context),
                 child: const Text('OK'),
               ),
             ],
@@ -255,11 +291,4 @@ class _SignupPageState extends State<SignupPage> {
       }
     }
   }
-}
-
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: SignupPage(),
-  ));
 }

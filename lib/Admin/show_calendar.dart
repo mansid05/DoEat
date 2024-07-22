@@ -1,7 +1,5 @@
 
 import 'package:flutter/material.dart';
-import 'package:food_app/Admin/admin_home_page.dart';
-import 'package:food_app/Admin/admin_menu_page.dart';
 import 'package:food_app/auth/login_page.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -15,7 +13,6 @@ class ShowCalendar extends StatefulWidget {
 
 class _ShowCalendarState extends State<ShowCalendar> {
 
-  final int _selectedIndex=2;
 
   @override
   Widget build(BuildContext context) {
@@ -37,22 +34,20 @@ class _ShowCalendarState extends State<ShowCalendar> {
       ) ,
       floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
 
-      body: Container(
-        child: Column(
-          children: [
-            TableCalendar(
-              dayHitTestBehavior: HitTestBehavior.deferToChild,
-              calendarStyle: const CalendarStyle(),
-              onDaySelected: (selectedDay, focusedDay) {
-                setState(() {});
-              },
-              calendarFormat: CalendarFormat.month,
-              firstDay: DateTime.utc(2010, 10, 16),
-              lastDay: DateTime.utc(2030, 3, 14),
-              focusedDay: DateTime.now(),
-            )
-          ],
-        ),
+      body: Column(
+        children: [
+          TableCalendar(
+            dayHitTestBehavior: HitTestBehavior.deferToChild,
+            calendarStyle: const CalendarStyle(),
+            onDaySelected: (selectedDay, focusedDay) {
+              setState(() {});
+            },
+            calendarFormat: CalendarFormat.month,
+            firstDay: DateTime.utc(2010, 10, 16),
+            lastDay: DateTime.utc(2030, 3, 14),
+            focusedDay: DateTime.now(),
+          )
+        ],
       ),
     );
   }

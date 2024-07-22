@@ -52,25 +52,29 @@ class Address {
 }
 
 class AddressModel {
+  final String userID;
   final String address;
   final String contactNumber;
 
   AddressModel({
+    required this.userID,
     required this.address,
     required this.contactNumber,
   });
 
-  Map<String, dynamic> toMap() {
+  factory AddressModel.fromFirestore(Map<String, dynamic> data) {
+    return AddressModel(
+      userID: data['userID'],
+      address: data['address'],
+      contactNumber: data['contactNumber'],
+    );
+  }
+
+  Map<String, dynamic> toFirestore() {
     return {
+      'userID': userID,
       'address': address,
       'contactNumber': contactNumber,
     };
-  }
-
-  factory AddressModel.fromMap(Map<String, dynamic> map) {
-    return AddressModel(
-      address: map['address'],
-      contactNumber: map['contactNumber'],
-    );
   }
 }

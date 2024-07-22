@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_app/models/banner.dart';
@@ -7,7 +6,6 @@ import 'package:food_app/screens/menu/cart/cart_manager.dart';
 import 'package:food_app/screens/menu/cart/cart_page.dart';
 import 'package:food_app/screens/menu/details_page.dart';
 import 'package:food_app/screens/search/filter_page.dart';
-
 import '../../models/FoodItem.dart';
 
 class FavouritePage extends StatefulWidget {
@@ -28,7 +26,7 @@ class _FavouritePageState extends State<FavouritePage> {
     super.initState();
     _pageController = PageController(initialPage: 0);
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       if (_isForward) {
         if (_currentPage < 4) {
           _currentPage++;
@@ -189,7 +187,7 @@ class _FavouritePageState extends State<FavouritePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const DetailsPage(foodItem: {},),
+                      builder: (context) => DetailsPage(foodItem: item.toMap()),
                     ),
                   );
                 },
@@ -197,7 +195,24 @@ class _FavouritePageState extends State<FavouritePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Image.network(item.image, fit: BoxFit.cover, height: 120.0, width: double.infinity),
+                      Stack(
+                        children: [
+                          Image.network(item.image, fit: BoxFit.cover, height: 120.0, width: double.infinity),
+                          Positioned(
+                            top: 8.0,
+                            right: 8.0,
+                            child: IconButton(
+                              icon: const Icon(Icons.favorite, color: Color(0xFFDC143C)),
+                              onPressed: () async {
+                                await FirebaseFirestore.instance.collection('favouriteItems').doc(item.id).delete();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('${item.name} removed from favorites')),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
@@ -216,7 +231,7 @@ class _FavouritePageState extends State<FavouritePage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('\₹${item.price}', style: const TextStyle(color: Color(0xFFDC143C))),
+                                Text('₹${item.price}', style: const TextStyle(color: Color(0xFFDC143C))),
                                 ElevatedButton(
                                   onPressed: () {
                                     CartManager().addItem({

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:food_app/screens/menu/cart/cart_manager.dart';
-import 'package:food_app/screens/profile/payment/verify_page.dart';
 import 'cart/cart_page.dart';
 
 class DetailsPage extends StatefulWidget {
@@ -28,7 +27,10 @@ class _DetailsPageState extends State<DetailsPage> {
     setState(() {
       isFavorite = !isFavorite;
       // Update Firestore with the new favorite status
-      FirebaseFirestore.instance.collection('menuItems').doc(widget.foodItem['id']).update({
+      FirebaseFirestore.instance
+          .collection('menuItems')
+          .doc(widget.foodItem['id'])
+          .update({
         'isFavorite': isFavorite,
       });
     });
@@ -42,9 +44,21 @@ class _DetailsPageState extends State<DetailsPage> {
     });
   }
 
+  void _addToWishlist() {
+    FirebaseFirestore.instance
+        .collection('favouriteItems')
+        .doc(widget.foodItem['id'])
+        .set(widget.foodItem);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('${widget.foodItem['name']} added to wishlist')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    double price = widget.foodItem['price'] is double ? widget.foodItem['price'] : double.parse(widget.foodItem['price'].toString());
+    double price = widget.foodItem['price'] is double
+        ? widget.foodItem['price']
+        : double.parse(widget.foodItem['price'].toString());
     double totalPrice = price * quantity;
 
     return Scaffold(
@@ -55,7 +69,8 @@ class _DetailsPageState extends State<DetailsPage> {
             Navigator.of(context).pop();
           },
         ),
-        title: const Text('Product Details', style: TextStyle(color: Color(0xFFDC143C))),
+        title: const Text('Product Details',
+            style: TextStyle(color: Color(0xFFDC143C))),
         actions: [
           IconButton(
             icon: const Icon(Icons.shopping_cart, color: Color(0xFFDC143C)),
@@ -104,7 +119,8 @@ class _DetailsPageState extends State<DetailsPage> {
               const SizedBox(height: 16.0),
               Text(
                 widget.foodItem['name'] ?? '',
-                style: const TextStyle(fontSize: 22.0, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                    fontSize: 22.0, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8.0),
               Row(
@@ -117,14 +133,19 @@ class _DetailsPageState extends State<DetailsPage> {
                     ],
                   ),
                   Text(
-                    '\₹${price.toStringAsFixed(2)}',
-                    style: const TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold, color: Color(0xFFDC143C)),
+                    '₹${price.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFFDC143C)),
                   ),
                 ],
               ),
               const SizedBox(height: 8.0),
               Text(
-                widget.foodItem['offer'] == 'Free Shipping' ? 'Free Shipping' : 'Delivery charges apply',
+                widget.foodItem['offer'] == 'Free Shipping'
+                    ? 'Free Shipping'
+                    : 'Delivery charges apply',
                 style: const TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 16.0),
@@ -134,7 +155,8 @@ class _DetailsPageState extends State<DetailsPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Pre-rating', style: TextStyle(fontSize: 16.0)),
+                      const Text('Pre-rating',
+                          style: TextStyle(fontSize: 16.0)),
                       Row(
                         children: List.generate(5, (index) {
                           return const Icon(
@@ -149,13 +171,18 @@ class _DetailsPageState extends State<DetailsPage> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Give your rating', style: TextStyle(fontSize: 16.0)),
+                      const Text('Give your rating',
+                          style: TextStyle(fontSize: 16.0)),
                       Row(
                         children: List.generate(5, (index) {
                           return IconButton(
                             icon: Icon(
-                              ratingStars[index] ? Icons.star : Icons.star_border,
-                              color: ratingStars[index] ? Colors.orange : Colors.grey,
+                              ratingStars[index]
+                                  ? Icons.star
+                                  : Icons.star_border,
+                              color: ratingStars[index]
+                                  ? Colors.orange
+                                  : Colors.grey,
                               size: 20.0,
                             ),
                             onPressed: () {
@@ -169,19 +196,24 @@ class _DetailsPageState extends State<DetailsPage> {
                 ],
               ),
               const SizedBox(height: 16.0),
-              const Text('Details', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+              const Text('Details',
+                  style:
+                  TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8.0),
               Text(
                 widget.foodItem['description'] ?? 'Delicious food item',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const Text('...Read More', style: TextStyle(color: Colors.blue)),
+              const Text('...Read More',
+                  style: TextStyle(color: Colors.blue)),
               const SizedBox(height: 16.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const Text('Quantity', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+                  const Text('Quantity',
+                      style:
+                      TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
                   const SizedBox(width: 10.0),
                   Row(
                     children: [
@@ -195,7 +227,8 @@ class _DetailsPageState extends State<DetailsPage> {
                           }
                         },
                       ),
-                      Text(quantity.toString(), style: const TextStyle(fontSize: 18.0)),
+                      Text(quantity.toString(),
+                          style: const TextStyle(fontSize: 18.0)),
                       IconButton(
                         icon: const Icon(Icons.add),
                         onPressed: () {
@@ -209,7 +242,9 @@ class _DetailsPageState extends State<DetailsPage> {
                 ],
               ),
               const SizedBox(height: 16.0),
-              Text('Total Price: \₹${totalPrice.toStringAsFixed(2)}', style: const TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+              Text('Total Price: ₹${totalPrice.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                      fontSize: 18.0, fontWeight: FontWeight.bold)),
               const SizedBox(height: 16.0),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -225,30 +260,29 @@ class _DetailsPageState extends State<DetailsPage> {
                         'quantity': quantity,
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('${widget.foodItem['name']} added to cart')),
+                        SnackBar(
+                            content:
+                            Text('${widget.foodItem['name']} added to cart')),
                       );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.transparent,
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0, vertical: 12.0),
                       side: const BorderSide(color: Color(0xFFDC143C)),
                     ),
-                    child: const Text('Add to Cart', style: TextStyle(color: Color(0xFFDC143C))),
+                    child: const Text('Add to Cart',
+                        style: TextStyle(color: Color(0xFFDC143C))),
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => VerifyPage(total: totalPrice,),
-                        ),
-                      );
-                    },
+                    onPressed: _addToWishlist,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFDC143C),
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0, vertical: 12.0),
                     ),
-                    child: const Text('Place Order', style: TextStyle(color: Colors.white)),
+                    child: const Text('Add to Wishlist',
+                        style: TextStyle(color: Colors.white)),
                   ),
                 ],
               ),

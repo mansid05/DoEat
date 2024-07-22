@@ -308,7 +308,7 @@ class _MenuCardState extends State<MenuCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '\₹${widget.foodItem.price.toString()}',
+                          '₹${widget.foodItem.price.toString()}',
                           style: const TextStyle(
                             color: Color(0xFFDC143C),
                             fontWeight: FontWeight.bold,

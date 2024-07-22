@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:food_app/screens/profile/order/order_details_page.dart';
+import 'package:food_app/screens/user_navigation.dart';
+import '../../../models/Address.dart';
+import '../../../models/CartItem.dart';
 import '../../home/home_page.dart';
-import 'order_history_page.dart';
 
 class OrderPlacedPage extends StatelessWidget {
-  const OrderPlacedPage({Key? key});
+  final AddressModel addressModel;
+  final double total;
+  final List<CartItem> cartItems;
+
+  const OrderPlacedPage({
+    Key? key,
+    required this.addressModel,
+    required this.total,
+    required this.cartItems,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -35,9 +47,27 @@ class OrderPlacedPage extends StatelessWidget {
             const SizedBox(height: 20.0),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: Column(
+                children: [
+                  Text('Address: ${addressModel.address}', style: const TextStyle(fontSize: 16.0)),
+                  Text('Contact Number: ${addressModel.contactNumber}', style: const TextStyle(fontSize: 16.0)),
+                  Text('Total: ₹${total.toStringAsFixed(2)}', style: const TextStyle(fontSize: 16.0)),
+                  const SizedBox(height: 20.0),
+                  const Text('Cart Items:', style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold)),
+                  ...cartItems.map((item) => Text('${item.name} (x${item.quantity}) - ₹${item.price * item.quantity}')),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).popUntil((route) => route.isFirst);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (context) => const UserNavigation()),
+                        (route) => false,
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFDC143C),
@@ -45,7 +75,7 @@ class OrderPlacedPage extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(0.0),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0), // Adjust horizontal padding here
+                  padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0),
                 ),
                 child: const Text('Continue Shopping', style: TextStyle(color: Colors.white)),
               ),
@@ -58,7 +88,7 @@ class OrderPlacedPage extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => OrderHistoryPage(),
+                      builder: (context) => OrderDetailsPage(orderId: ''), // Replace with actual order ID
                     ),
                   );
                 },
@@ -67,7 +97,7 @@ class OrderPlacedPage extends StatelessWidget {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(0.0),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0), // Adjust horizontal padding here
+                  padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0),
                 ),
                 child: const Text('View Order', style: TextStyle(color: Color(0xFFDC143C))),
               ),

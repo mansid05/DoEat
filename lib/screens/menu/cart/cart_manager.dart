@@ -83,12 +83,23 @@ class CartManager extends ChangeNotifier {
     }
   }
 
-  double calculateSubtotal() {
-    return _cartItems.fold(0.0, (sum, item) => sum + (item['price'] * item['quantity']));
+  Future<void> clearCart() async {
+    try {
+      // Delete all items from the cart collection
+      WriteBatch batch = _firestore.batch();
+      for (var item in _cartItems) {
+        batch.delete(_firestore.collection('cart').doc(item['id']));
+      }
+      await batch.commit();
+      _cartItems.clear();
+      notifyListeners();
+    } catch (e) {
+      print('Error clearing cart: $e');
+    }
   }
 
-  double calculateShipping() {
-    return 5.0; // Placeholder for shipping calculation
+  double calculateSubtotal() {
+    return _cartItems.fold(0.0, (sum, item) => sum + (item['price'] * item['quantity']));
   }
 
   double calculateTax() {
@@ -96,6 +107,12 @@ class CartManager extends ChangeNotifier {
   }
 
   double calculateTotal() {
-    return calculateSubtotal() + calculateShipping() + calculateTax();
+    return calculateSubtotal() + calculateTax();
+  }
+
+  // Method to clear local cart state
+  void resetCart() {
+    _cartItems.clear();
+    notifyListeners();
   }
 }

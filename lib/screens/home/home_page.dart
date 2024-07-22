@@ -15,7 +15,7 @@ import '../profile/profile_page.dart';
 import '../search/search_page.dart'; // Import the DetailsPage
 
 class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+  const HomePage({super.key});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -28,14 +28,23 @@ class _HomePageState extends State<HomePage> {
   bool _isForward = true;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
       if (_isForward) {
-        if (_currentPage < 4) {
+        if (_currentPage < 3) {
           _currentPage++;
         } else {
           _isForward = false;
@@ -52,7 +61,7 @@ class _HomePageState extends State<HomePage> {
 
       _pageController.animateToPage(
         _currentPage,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 1000),
         curve: Curves.easeIn,
       );
     });
@@ -336,15 +345,15 @@ class _HomePageState extends State<HomePage> {
 
         List<Category> categories = snapshot.data!;
 
-        return SizedBox(
-          height: 130.0,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              return SizedBox(
-                width: 100.0,
-                child: Padding(
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0), // Adjust margin as needed
+          child: SizedBox(
+            height: 130.0,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                return Padding(
                   padding: const EdgeInsets.all(5),
                   child: Column(
                     children: [
@@ -352,24 +361,27 @@ class _HomePageState extends State<HomePage> {
                         onTap: () {
                           // Handle category tap
                         },
-                        child: Image.network(
-                          categories[index].url ?? '',
-                          width: 80,
-                          height: 80,
-                          fit: BoxFit.cover,
+                        child: ClipOval(
+                          child: Image.network(
+                            categories[index].url ?? '',
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                       ),
                       Text(categories[index].name ?? ''),
                     ],
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         );
       },
     );
   }
+
 
   Widget _buildSectionTitle(String title, {double topMargin = 10.0}) {
     return Container(
@@ -382,6 +394,7 @@ class _HomePageState extends State<HomePage> {
             style: const TextStyle(
               fontSize: 20.0,
               fontWeight: FontWeight.bold,
+              color: Color(0xFFDC143C),
             ),
           ),
           const Icon(
@@ -407,112 +420,119 @@ class _HomePageState extends State<HomePage> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        List<FoodItem> foodItems = snapshot.data!.docs.map((doc) {
+        List<FoodItem> productItems = snapshot.data!.docs.map((doc) {
           return FoodItem.fromMap(doc.data() as Map<String, dynamic>, doc.id);
         }).toList();
 
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: foodItems.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            childAspectRatio: 0.7,
-          ),
-          itemBuilder: (context, index) {
-            FoodItem foodItem = foodItems[index];
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DetailsPage(foodItem: {
-                      'id': foodItem.id,
-                      'image': foodItem.image,
-                      'name': foodItem.name,
-                      'price': foodItem.price,
-                      'description': foodItem.description,
-                      // Add any other fields you need
-                    }),
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0), // Adjust margin as needed
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: productItems.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.8, // Adjust as needed for card size
+              mainAxisSpacing: 10.0, // Spacing between rows
+              crossAxisSpacing: 10.0, // Spacing between columns
+            ),
+            itemBuilder: (context, index) {
+              FoodItem foodItem = productItems[index];
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => DetailsPage(foodItem: {
+                        'id': foodItem.id,
+                        'image': foodItem.image,
+                        'name': foodItem.name,
+                        'price': foodItem.price,
+                        'description': foodItem.description,
+                        // Add any other fields you need
+                      }),
+                    ),
+                  );
+                },
+                child: Card(
+                  elevation: 3, // Add elevation for a shadow effect
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10.0),
                   ),
-                );
-              },
-              child: Card(
-                elevation: 3, // Add elevation for a shadow effect
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.0),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(
-                          10)),
-                      child: Image.network(
-                        foodItem.image,
-                        height: 120.0,
-                        fit: BoxFit.cover,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(10),
+                        ),
+                        child: Image.network(
+                          foodItem.image,
+                          height: 100.0,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            foodItem.name,
-                            style: const TextStyle(
-                              fontSize: 16.0,
-                              fontWeight: FontWeight.bold,
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              foodItem.name,
+                              style: const TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 5.0),
-                          Text(
-                            '\₹${foodItem.price.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 14.0,
-                              color: Colors.grey,
+                            const SizedBox(height: 5.0),
+                            Text(
+                              '₹${foodItem.price.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontSize: 14.0,
+                                color: Colors.grey,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 10.0),
-                          ElevatedButton(
-                            onPressed: () async {
-                              await cartManager.addItem({
-                                'name': foodItem.name,
-                                'price': foodItem.price,
-                                'image': foodItem.image,
-                                'quantity': 1,
-                              });
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                              backgroundColor: const Color(0xFFDC143C),
-                              minimumSize: const Size(70.0, 36.0),
+                            const SizedBox(height: 10.0),
+                            ElevatedButton(
+                              onPressed: () async {
+                                await cartManager.addItem({
+                                  'name': foodItem.name,
+                                  'price': foodItem.price,
+                                  'image': foodItem.image,
+                                  'quantity': 1,
+                                });
+                                _showSnackBar('${foodItem.name} is added to cart');
+                              },
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                backgroundColor: const Color(0xFFDC143C),
+                                minimumSize: const Size(70.0, 36.0),
+                              ),
+                              child: const Text(
+                                'ADD',
+                                style: TextStyle(fontSize: 12.0, color: Colors.white),
+                              ),
                             ),
-                            child: const Text(
-                              'ADD',
-                              style: TextStyle(fontSize: 12.0, color: Colors.white),
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         );
       },
     );
   }
 
+
   Widget _buildPopularCarousel() {
     final cartManager = CartManager();
 
     return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection('popular_items')
-          .snapshots(),
+      stream: FirebaseFirestore.instance.collection('popular_items').snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasError) {
           return const Center(child: Text('Error loading popular items'));
@@ -526,102 +546,108 @@ class _HomePageState extends State<HomePage> {
           return FoodItem.fromMap(doc.data() as Map<String, dynamic>, doc.id);
         }).toList();
 
-        return SizedBox(
-          height: 250.0, // Adjusted height to prevent overflow
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: popularItems.length,
-            itemBuilder: (context, index) {
-              FoodItem foodItem = popularItems[index];
-              return Container(
-                width: 200.0,
-                margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => DetailsPage(foodItem: {
-                          'id': foodItem.id,
-                          'image': foodItem.image,
-                          'name': foodItem.name,
-                          'price': foodItem.price,
-                          'description': foodItem.description,
-                          // Add any other fields you need
-                        }),
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0), // Adjust margin as needed
+          child: SizedBox(
+            height: 250.0, // Adjusted height to prevent overflow
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: popularItems.length,
+              itemBuilder: (context, index) {
+                FoodItem foodItem = popularItems[index];
+                return Container(
+                  width: 200.0,
+                  margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DetailsPage(foodItem: {
+                            'id': foodItem.id,
+                            'image': foodItem.image,
+                            'name': foodItem.name,
+                            'price': foodItem.price,
+                            'description': foodItem.description,
+                            // Add any other fields you need
+                          }),
+                        ),
+                      );
+                    },
+                    child: Card(
+                      elevation: 3, // Add elevation for a shadow effect
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
                       ),
-                    );
-                  },
-                  child: Card(
-                    elevation: 3, // Add elevation for a shadow effect
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        ClipRRect(
-                          borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(10)),
-                          child: Image.network(
-                            foodItem.image,
-                            height: 120.0, // Adjusted image height
-                            fit: BoxFit.cover,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(10)),
+                            child: Image.network(
+                              foodItem.image,
+                              height: 100.0, // Adjusted image height
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                foodItem.name,
-                                style: const TextStyle(
-                                  fontSize: 16.0,
-                                  fontWeight: FontWeight.bold,
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  foodItem.name,
+                                  style: const TextStyle(
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 5.0),
-                              Text(
-                                '\₹${foodItem.price.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontSize: 14.0,
-                                  color: Colors.grey,
+                                const SizedBox(height: 5.0),
+                                Text(
+                                  '₹${foodItem.price.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontSize: 14.0,
+                                    color: Colors.grey,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(height: 10.0),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  await cartManager.addItem({
-                                    'name': foodItem.name,
-                                    'price': foodItem.price,
-                                    'image': foodItem.image,
-                                    'quantity': 1,
-                                  });
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                                  backgroundColor: const Color(0xFFDC143C),
-                                  minimumSize: const Size(70.0, 36.0),
+                                const SizedBox(height: 10.0),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    await cartManager.addItem({
+                                      'name': foodItem.name,
+                                      'price': foodItem.price,
+                                      'image': foodItem.image,
+                                      'quantity': 1,
+                                    });
+                                    _showSnackBar(
+                                        '${foodItem.name} is added to cart');
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12.0),
+                                    backgroundColor: const Color(0xFFDC143C),
+                                    minimumSize: const Size(70.0, 36.0),
+                                  ),
+                                  child: const Text(
+                                    'ADD',
+                                    style: TextStyle(
+                                        fontSize: 12.0, color: Colors.white),
+                                  ),
                                 ),
-                                child: const Text(
-                                  'ADD',
-                                  style: TextStyle(fontSize: 12.0, color: Colors.white),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         );
       },
     );
   }
 }
-

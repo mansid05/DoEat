@@ -12,7 +12,7 @@ void main() async {
 }
 
 class AddressPage extends StatefulWidget {
-  const AddressPage({Key? key}) : super(key: key);
+  const AddressPage({super.key});
 
   @override
   _AddressPageState createState() => _AddressPageState();
@@ -204,7 +204,7 @@ class _AddressPageState extends State<AddressPage> {
 class SummaryPage extends StatelessWidget {
   final Address addressModel;
 
-  const SummaryPage({Key? key, required this.addressModel}) : super(key: key);
+  const SummaryPage({super.key, required this.addressModel});
 
   @override
   Widget build(BuildContext context) {

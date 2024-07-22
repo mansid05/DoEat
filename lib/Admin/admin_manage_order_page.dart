@@ -1,74 +1,105 @@
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/Order.dart';
-import '../screens/profile/order/order_details_page.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 
 class AdminManageOrderPage extends StatefulWidget {
-  const AdminManageOrderPage({Key? key}) : super(key: key);
-
   @override
   _AdminManageOrderPageState createState() => _AdminManageOrderPageState();
 }
 
 class _AdminManageOrderPageState extends State<AdminManageOrderPage> {
   @override
+  void initState() {
+    super.initState();
+    _setupFirebaseMessaging();
+  }
+
+  void _setupFirebaseMessaging() {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    // Request permissions for iOS
+    messaging.requestPermission();
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      RemoteNotification? notification = message.notification;
+      if (notification != null) {
+        // Show a local notification
+        // Implement local notification logic here
+      }
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      // Handle notification tap
+      print('Notification was tapped!');
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFFDC143C)),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
         title: const Text('Manage Orders', style: TextStyle(color: Color(0xFFDC143C))),
         backgroundColor: Colors.white,
         elevation: 0,
       ),
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('orders').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('orders')
+            .orderBy('timestamp', descending: true)
+            .snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          var orders = snapshot.data!.docs.map((doc) {
-            return orderPlaced.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-          }).toList();
+          List<DocumentSnapshot> orders = snapshot.data!.docs;
 
           return ListView.builder(
             itemCount: orders.length,
             itemBuilder: (context, index) {
-              final order = orders[index];
-              return Card(
-                margin: const EdgeInsets.all(10.0),
-                child: ListTile(
-                  title: Text('Order #${order.orderNumber}', style: const TextStyle(fontSize: 16.0)),
-                  subtitle: Text('Total: \₹${order.totalPrice.toStringAsFixed(2)}', style: const TextStyle(fontSize: 14.0)),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.arrow_forward, color: Color(0xFFDC143C)),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => OrderDetailsPage(orderId: order.id),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              );
+              DocumentSnapshot order = orders[index];
+              return _buildOrderCard(order);
             },
           );
         },
       ),
     );
   }
-}
 
-void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: AdminManageOrderPage(),
-  ));
+  Widget _buildOrderCard(DocumentSnapshot order) {
+    String address = order['address'];
+    String contactNumber = order['contactNumber'];
+    double total = order['total'];
+    List<dynamic> items = order['items'];
+
+    return Card(
+      margin: const EdgeInsets.all(10.0),
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Order ID: ${order.id}', style: const TextStyle(fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10.0),
+            Text('Address: $address'),
+            Text('Contact Number: $contactNumber'),
+            const SizedBox(height: 10.0),
+            Text('Total: \₹${total.toStringAsFixed(2)}'),
+            const SizedBox(height: 10.0),
+            Text('Items:', style: const TextStyle(fontWeight: FontWeight.bold)),
+            ...items.map((item) => _buildOrderItem(item)).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrderItem(Map<String, dynamic> item) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      title: Text(item['name']),
+      subtitle: Text('Quantity: ${item['quantity']}'),
+      trailing: Text('\₹${item['price'].toStringAsFixed(2)}'),
+    );
+  }
 }
