@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/User.dart';
 import '../screens/home/home_page.dart';
 import 'AuthService.dart';
@@ -22,6 +25,7 @@ class _SignupPageState extends State<SignupPage> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  File? _imageFile;
 
   @override
   void dispose() {
@@ -31,6 +35,42 @@ class _SignupPageState extends State<SignupPage> {
     _confirmPasswordController.dispose();
     super.dispose();
   }
+
+  Future<void> _pickImage() async {
+    try {
+      final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        setState(() {
+          _imageFile = File(pickedFile.path);
+        });
+      } else {
+        print('No image selected');
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
+
+  Future<String> _uploadImage(File image) async {
+    try {
+      final storageRef = FirebaseStorage.instance
+          .ref()
+          .child('profile_images/${DateTime.now().millisecondsSinceEpoch}.jpg');
+      final uploadTask = storageRef.putFile(image);
+      final snapshot = await uploadTask.whenComplete(() => {});
+      if (snapshot.state == TaskState.success) {
+        final downloadURL = await snapshot.ref.getDownloadURL();
+        print('Image uploaded successfully. URL: $downloadURL');
+        return downloadURL;
+      } else {
+        throw Exception('Failed to upload image');
+      }
+    } catch (e) {
+      print('Error uploading image: $e');
+      throw e;
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -70,6 +110,22 @@ class _SignupPageState extends State<SignupPage> {
                         height: constraints.maxWidth * 0.3,
                       ),
                       SizedBox(height: constraints.maxHeight * 0.05),
+                      GestureDetector(
+                        onTap: _pickImage,
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundColor: const Color(0xFFDC143C),
+                          backgroundImage: _imageFile != null ? FileImage(_imageFile!) : null,
+                          child: _imageFile == null
+                              ? const Icon(
+                            Icons.camera_alt,
+                            color: Colors.white,
+                            size: 50,
+                          )
+                              : null,
+                        ),
+                      ),
+                      SizedBox(height: constraints.maxHeight * 0.02),
                       _buildTextFieldWithIcon(
                         Icons.person,
                         'Name',
@@ -248,10 +304,17 @@ class _SignupPageState extends State<SignupPage> {
   void _submitForm() async {
     if (_formKey.currentState!.validate()) {
       try {
+        // Create the user with email and password
         final UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+
+        // Upload the profile image if selected
+        String profileImageUrl = '';
+        if (_imageFile != null) {
+          profileImageUrl = await _uploadImage(_imageFile!);
+        }
 
         // Create a new user document in Firestore
         final user = UserModel(
@@ -261,7 +324,7 @@ class _SignupPageState extends State<SignupPage> {
           address: '',
           phoneNumber: '',
           lastActive: DateTime.now(),
-          profileImageUrl: '',
+          profileImageUrl: profileImageUrl,
           isActive: false,
         );
 
@@ -273,13 +336,12 @@ class _SignupPageState extends State<SignupPage> {
           MaterialPageRoute(builder: (context) => const LoginPage()),
         );
       } catch (e) {
-        // Handle errors here
-        print('Error signing up: $e');
+        print('Error signing up: $e'); // Print the error
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: const Text('Error'),
-            content: const Text('Failed to sign up. Please try again.'),
+            content: Text('Failed to sign up. Please try again. Error: $e'), // Show detailed error
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context),

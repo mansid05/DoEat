@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:food_app/screens/profile/order/order_details_page.dart';
 import 'package:food_app/screens/user_navigation.dart';
 import '../../../models/Address.dart';
 import '../../../models/CartItem.dart';
@@ -78,28 +77,6 @@ class OrderPlacedPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0),
                 ),
                 child: const Text('Continue Shopping', style: TextStyle(color: Colors.white)),
-              ),
-            ),
-            const SizedBox(height: 15.0),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: OutlinedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => OrderDetailsPage(orderId: ''), // Replace with actual order ID
-                    ),
-                  );
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFFDC143C), width: 2.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(0.0),
-                  ),
-                  padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 40.0),
-                ),
-                child: const Text('View Order', style: TextStyle(color: Color(0xFFDC143C))),
               ),
             ),
           ],

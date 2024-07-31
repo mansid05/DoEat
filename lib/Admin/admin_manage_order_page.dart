@@ -69,7 +69,7 @@ class _AdminManageOrderPageState extends State<AdminManageOrderPage> {
   Widget _buildOrderCard(DocumentSnapshot order) {
     String address = order['address'];
     String contactNumber = order['contactNumber'];
-    double total = order['total'];
+    double total = (order['total'] as num).toDouble(); // Convert to double safely
     List<dynamic> items = order['items'];
 
     return Card(
@@ -95,11 +95,13 @@ class _AdminManageOrderPageState extends State<AdminManageOrderPage> {
   }
 
   Widget _buildOrderItem(Map<String, dynamic> item) {
+    double price = (item['price'] as num).toDouble(); // Convert to double safely
+
     return ListTile(
       contentPadding: EdgeInsets.zero,
       title: Text(item['name']),
       subtitle: Text('Quantity: ${item['quantity']}'),
-      trailing: Text('\₹${item['price'].toStringAsFixed(2)}'),
+      trailing: Text('₹${price.toStringAsFixed(2)}'),
     );
   }
 }

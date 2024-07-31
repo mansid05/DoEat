@@ -1,6 +1,26 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:food_app/screens/search/filter_page.dart';
 
+// Fetch food items from Firestore
+Future<List<Map<String, dynamic>>> fetchFoodItems() async {
+  try {
+    // Fetch data from both collections
+    QuerySnapshot homePageSnapshot = await FirebaseFirestore.instance.collection('products').get();
+    QuerySnapshot menuPageSnapshot = await FirebaseFirestore.instance.collection('menuItems').get();
+
+    // Combine data from both collections
+    List<Map<String, dynamic>> allItems = [
+      ...homePageSnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>),
+      ...menuPageSnapshot.docs.map((doc) => doc.data() as Map<String, dynamic>),
+    ];
+
+    return allItems;
+  } catch (e) {
+    print('Error fetching food items: $e');
+    return [];
+  }
+}
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -10,57 +30,35 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
-  List<Map<String, String>> foodItems = [
-    {
-      'image': 'assets/food/food_image_1.png',
-      'name': 'Food Name 1',
-      'restaurant': 'Restaurant 1',
-    },
-    {
-      'image': 'assets/food/food_image_2.png',
-      'name': 'Food Name 2',
-      'restaurant': 'Restaurant 2',
-    },
-    {
-      'image': 'assets/food/food_image_3.png',
-      'name': 'Food Name 3',
-      'restaurant': 'Restaurant 3',
-    },
-    {
-      'image': 'assets/food/food_image_4.png',
-      'name': 'Food Name 4',
-      'restaurant': 'Restaurant 4',
-    },
-    {
-      'image': 'assets/food/food_image_5.png',
-      'name': 'Food Name 5',
-      'restaurant': 'Restaurant 5',
-    },
-  ];
-
-  List<Map<String, String>> filteredFoodItems = [];
+  List<Map<String, dynamic>> foodItems = [];
+  List<Map<String, dynamic>> filteredFoodItems = [];
 
   @override
   void initState() {
     super.initState();
-    filteredFoodItems = List.from(foodItems);
+    _loadFoodItems();  // Load food items on initialization
+  }
+
+  Future<void> _loadFoodItems() async {
+    final items = await fetchFoodItems();
+    setState(() {
+      foodItems = items;
+      filteredFoodItems = items; // Initially set to all items
+    });
   }
 
   void _filterFoodItems(String query) {
     setState(() {
-      filteredFoodItems = foodItems.where((foodItem) {
-        final foodNameLower = foodItem['name']!.toLowerCase();
-        final restaurantLower = foodItem['restaurant']!.toLowerCase();
-        final searchLower = query.toLowerCase();
-
-        return foodNameLower.contains(searchLower) || restaurantLower.contains(searchLower);
-      }).toList();
-    });
-  }
-
-  void _removeFoodItem(int index) {
-    setState(() {
-      filteredFoodItems.removeAt(index);
+      if (query.isNotEmpty) {
+        filteredFoodItems = foodItems.where((foodItem) {
+          final foodNameLower = foodItem['name']?.toLowerCase() ?? '';
+          final restaurantLower = foodItem['restaurant']?.toLowerCase() ?? '';
+          final searchLower = query.toLowerCase();
+          return foodNameLower.contains(searchLower) || restaurantLower.contains(searchLower);
+        }).toList();
+      } else {
+        filteredFoodItems = foodItems; // Show all items if query is empty
+      }
     });
   }
 
@@ -68,12 +66,6 @@ class _SearchPageState extends State<SearchPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFFDC143C)),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
         title: const Text('SEARCH FOOD', style: TextStyle(color: Color(0xFFDC143C))),
         actions: [
           IconButton(
@@ -114,14 +106,10 @@ class _SearchPageState extends State<SearchPage> {
                   leading: SizedBox(
                     height: 50.0,
                     width: 50.0,
-                    child: Image.asset(foodItem['image']!, fit: BoxFit.cover),
+                    child: Image.network(foodItem['image'] ?? '', fit: BoxFit.cover), // Use Image.network for URLs
                   ),
-                  title: Text(foodItem['name']!),
-                  subtitle: Text(foodItem['restaurant']!),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.close, color: Color(0xFFDC143C)),
-                    onPressed: () => _removeFoodItem(index),
-                  ),
+                  title: Text(foodItem['name'] ?? 'No Name'),
+                  subtitle: Text(foodItem['restaurant'] ?? 'No Restaurant'),
                 );
               },
             ),

@@ -1,5 +1,4 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:food_app/auth/login_page.dart';
 import 'package:food_app/screens/user_navigation.dart';
@@ -12,17 +11,11 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
   runApp(const DoEatApp());
-}
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp();
-  print('Handling a background message: ${message.messageId}');
 }
 
 class DoEatApp extends StatelessWidget {
-  const DoEatApp({Key? key});
+  const DoEatApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -32,9 +25,22 @@ class DoEatApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: FirebaseAuth.instance.currentUser != null
-          ? const LoginPage() // Navigate to HomePage if user is logged in
-          : UserNavigation(), // Navigate to LoginPage if user is not logged in
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.active) {
+            // Check if user is logged in
+            if (snapshot.hasData) {
+              return const UserNavigation(); // Redirect to UserNavigation if user is logged in
+            } else {
+              return const LoginPage(); // Redirect to LoginPage if user is not logged in
+            }
+          } else {
+            // Show a loading indicator while checking authentication state
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
+      ),
     );
   }
 }

@@ -45,12 +45,6 @@ class _MenuPageState extends State<MenuPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFFDC143C)),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
         title: const Text('MENU ITEMS', style: TextStyle(color: Color(0xFFDC143C))),
         actions: [
           IconButton(

@@ -20,15 +20,25 @@ class _FavouritePageState extends State<FavouritePage> {
   late Timer _timer;
   int _currentPage = 0;
   bool _isForward = true;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: 0);
 
-    _timer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+    _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
       if (_isForward) {
-        if (_currentPage < 4) {
+        if (_currentPage < 3) {
           _currentPage++;
         } else {
           _isForward = false;
@@ -45,7 +55,7 @@ class _FavouritePageState extends State<FavouritePage> {
 
       _pageController.animateToPage(
         _currentPage,
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 1000),
         curve: Curves.easeIn,
       );
     });

@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'CartItem.dart';
+import 'User.dart';  // Import UserModel class
 
 class Orders {
   final String id;
-  final String userId;
+  final UserModel user;  // Change userId to UserModel
   final String deliveryAddress;
   final String contactNumber;
   final double totalAmount;
@@ -14,7 +14,7 @@ class Orders {
 
   Orders({
     required this.id,
-    required this.userId,
+    required this.user,  // Change userId to UserModel
     required this.deliveryAddress,
     required this.contactNumber,
     required this.totalAmount,
@@ -25,15 +25,22 @@ class Orders {
 
   factory Orders.fromFirestore(DocumentSnapshot doc) {
     Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+    // Create a UserModel instance from the userId field
+    UserModel user = UserModel.fromMap(
+      data['user'] as Map<String, dynamic>,  // Adjust the path if needed
+      data['userId'] as String,
+    );
+
     return Orders(
       id: doc.id,
-      userId: data['userId'] ?? '',
+      user: user,
       deliveryAddress: data['address'] ?? '',
       contactNumber: data['contactNumber'] ?? '',
       totalAmount: (data['total'] as num).toDouble(),
       orderStatus: data['status'] ?? 'Pending',
       orderTimestamp: data['timestamp'] ?? Timestamp.now(),
-      cartItems: [],
+      cartItems: [],  // This should be updated based on your needs
     );
   }
 }

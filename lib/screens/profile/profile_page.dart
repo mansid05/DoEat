@@ -1,10 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:food_app/screens/profile/address/address_page.dart';
-import 'package:food_app/screens/profile/setting/language_page.dart';
-import 'package:food_app/screens/profile/setting/setting_page.dart';
-import 'package:food_app/screens/home/favourite_page.dart';
+import 'dart:io';
 
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:food_app/screens/profile/order/my_order_page.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../auth/login_page.dart';
+import '../home/favourite_page.dart';
+import 'address/address_page.dart';
+import 'setting/language_page.dart';
+import 'setting/setting_page.dart';
 import '../home/home_page.dart';
 
 class ProfilePage extends StatefulWidget {
@@ -15,11 +21,11 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  String name = 'John Doe';
-  String email = 'john.doe@example.com';
-  String address = '123 Main Street, City, Country';
-  String contactNumber = '+1234567890';
-  String profileImageUrl = ''; // Placeholder for profile image URL, or you can use a AssetImage for local images
+  String name = '';
+  String email = '';
+  String address = '';
+  String contactNumber = '';
+  String profileImageUrl = ''; // Placeholder for profile image URL
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
@@ -29,10 +35,34 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    nameController.text = name;
-    emailController.text = email;
-    addressController.text = address;
-    contactNumberController.text = contactNumber;
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      try {
+        final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        if (userDoc.exists) {
+          final userData = userDoc.data()!;
+          setState(() {
+            name = userData['name'] ?? '';
+            email = userData['email'] ?? '';
+            address = userData['address'] ?? '';
+            contactNumber = userData['contactNumber'] ?? '';
+            profileImageUrl = userData['profileImageUrl'] ?? '';
+
+            // Update controllers with fetched data
+            nameController.text = name;
+            emailController.text = email;
+            addressController.text = address;
+            contactNumberController.text = contactNumber;
+          });
+        }
+      } catch (e) {
+        print('Error fetching user data: $e');
+      }
+    }
   }
 
   @override
@@ -45,8 +75,51 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _editProfilePicture() async {
-    // Implement logic to choose or capture a new profile picture
-    // Update profileImageUrl with the new image URL or asset path
+    final picker = ImagePicker();
+    final pickedFile = await showDialog<ImageSource>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Select Image Source'),
+        actions: [
+          TextButton(
+            child: const Text('Gallery'),
+            onPressed: () => Navigator.pop(context, ImageSource.gallery),
+          ),
+        ],
+      ),
+    );
+
+    if (pickedFile != null) {
+      final selectedFile = await picker.pickImage(source: pickedFile);
+      if (selectedFile != null) {
+        File imageFile = File(selectedFile.path);
+
+        // Upload the image to Firebase Storage
+        try {
+          String fileName = DateTime.now().toIso8601String();
+          Reference storageReference = FirebaseStorage.instance.ref().child('profile_pictures/$fileName');
+          UploadTask uploadTask = storageReference.putFile(imageFile);
+
+          TaskSnapshot snapshot = await uploadTask;
+          String downloadUrl = await snapshot.ref.getDownloadURL();
+
+          // Update profileImageUrl with the new URL
+          setState(() {
+            profileImageUrl = downloadUrl;
+          });
+
+          // Optionally, update the Firestore document with the new profile image URL
+          final uid = FirebaseAuth.instance.currentUser?.uid;
+          if (uid != null) {
+            await FirebaseFirestore.instance.collection('users').doc(uid).update({
+              'profileImageUrl': profileImageUrl,
+            });
+          }
+        } catch (e) {
+          print('Error uploading image: $e');
+        }
+      }
+    }
   }
 
   Future<void> _editProfileDetails() async {
@@ -116,20 +189,28 @@ class _ProfilePageState extends State<ProfilePage> {
       },
     );
   }
+  Future<void> _saveProfileDetails() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) {
+      try {
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'name': nameController.text,
+          'email': emailController.text,
+          'address': addressController.text,
+          'contactNumber': contactNumberController.text,
+          'profileImageUrl': profileImageUrl, // Update with the new URL if changed
+        });
+      } catch (e) {
+        print('Error updating user data: $e');
+      }
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFFDC143C)),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const HomePage()),
-            );
-          },
-        ),
         title: const Text('PROFILE', style: TextStyle(color: Color(0xFFDC143C))),
         actions: [
           IconButton(
@@ -240,8 +321,11 @@ class _ProfilePageState extends State<ProfilePage> {
             title: Text(title2),
             trailing: const Icon(Icons.chevron_right, color: Color(0xFFDC143C)),
             onTap: () {
-
-            },
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const MyOrderPage()),
+              );
+              },
           ),
           const Divider(height: 0),
           ListTile(
@@ -262,7 +346,7 @@ class _ProfilePageState extends State<ProfilePage> {
             title: Text(title4),
             trailing: const Icon(Icons.chevron_right, color: Color(0xFFDC143C)),
             onTap: () {
-              // Navigate to SettingsPage
+              // Navigate to SettingPage
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const SettingsPage()),
@@ -274,43 +358,19 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  Widget _buildCard(IconData icon, String title, {Color? color}) {
+  Widget _buildCard(IconData icon, String title, {Color color = Colors.black}) {
     return Card(
       elevation: 2.0,
       child: ListTile(
-        leading: Icon(icon, color: color ?? const Color(0xFFDC143C)),
+        leading: Icon(icon, color: color),
         title: Text(title),
         trailing: const Icon(Icons.chevron_right, color: Color(0xFFDC143C)),
-        onTap: () {
-          // Implement action for logout
+        onTap: () async {
           if (title == 'Logout') {
-            showDialog(
-              context: context,
-              builder: (context) {
-                return AlertDialog(
-                  title: const Text('Logout'),
-                  content: const Text('Are you sure you want to logout?'),
-                  actions: <Widget>[
-                    TextButton(
-                      onPressed: () {
-                        // Implement logout functionality
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
-                              (Route<dynamic> route) => false,
-                        );
-                      },
-                      child: const Text('Logout', style: TextStyle(color: Colors.red)),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Cancel'),
-                    ),
-                  ],
-                );
-              },
+            await FirebaseAuth.instance.signOut();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginPage()),
             );
           }
         },
@@ -318,3 +378,4 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 }
+

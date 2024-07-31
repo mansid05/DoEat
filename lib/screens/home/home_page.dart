@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:food_app/models/Banner.dart';
 import 'package:food_app/models/Category.dart';
@@ -146,13 +147,12 @@ class _HomePageState extends State<HomePage> {
         children: <Widget>[
           DrawerHeader(
             decoration: const BoxDecoration(
-              color: Colors.red,
+              color: Color(0xFFDC143C),
             ),
             child: StreamBuilder<DocumentSnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('users')
-                  .doc(
-                  'currentUserId') // Replace with your actual user ID or use FirebaseAuth to get the current user ID
+                  .doc(FirebaseAuth.instance.currentUser!.uid) // Fetch current user's ID
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -163,6 +163,10 @@ class _HomePageState extends State<HomePage> {
                   return const Text('Loading user...');
                 }
 
+                if (!snapshot.hasData || !snapshot.data!.exists) {
+                  return const Text('User not found');
+                }
+
                 UserModel user = UserModel.fromMap(
                     snapshot.data!.data() as Map<String, dynamic>,
                     snapshot.data!.id);
@@ -171,16 +175,23 @@ class _HomePageState extends State<HomePage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CircleAvatar(
-                      backgroundImage: NetworkImage(user.profileImageUrl),
-                      radius: 30,
+                    Container(
+                      padding: const EdgeInsets.all(2.0), // Add some padding to create space for the border
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white, width: 1), // White border with thickness of 2
+                      ),
+                      child: CircleAvatar(
+                        backgroundImage: NetworkImage(user.profileImageUrl),
+                        radius: 30,
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
                     Text(
                       user.name,
                       style: const TextStyle(color: Colors.white),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 2),
                     Text(
                       user.email,
                       style: const TextStyle(color: Colors.white),
@@ -191,15 +202,27 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.home),
-            title: const Text('Home'),
+            leading: const Icon(
+              Icons.home,
+              color: Color(0xFFDC143C),
+            ),
+            title: Text(
+              'Home',
+              style: TextStyle(color: Color(0xFFDC143C)),
+            ),
             onTap: () {
               Navigator.pop(context);
             },
           ),
           ListTile(
-            leading: const Icon(Icons.search),
-            title: const Text('Search'),
+            leading: const Icon(
+              Icons.search,
+              color: Color(0xFFDC143C),
+            ),
+            title: Text(
+              'Search',
+              style: TextStyle(color: Color(0xFFDC143C)),
+            ),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -209,8 +232,14 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.favorite),
-            title: const Text('Favorites'),
+            leading: const Icon(
+              Icons.favorite,
+              color: Color(0xFFDC143C),
+            ),
+            title: Text(
+              'Favorites',
+              style: TextStyle(color: Color(0xFFDC143C)),
+            ),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -220,8 +249,14 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.shopping_cart),
-            title: const Text('Cart'),
+            leading: const Icon(
+              Icons.shopping_cart,
+              color: Color(0xFFDC143C),
+            ),
+            title: Text(
+              'Cart',
+              style: TextStyle(color: Color(0xFFDC143C)),
+            ),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -231,8 +266,14 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Profile'),
+            leading: const Icon(
+              Icons.person,
+              color: Color(0xFFDC143C),
+            ),
+            title: Text(
+              'Profile',
+              style: TextStyle(color: Color(0xFFDC143C)),
+            ),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -243,8 +284,14 @@ class _HomePageState extends State<HomePage> {
           ),
           const Divider(),
           ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
+            leading: const Icon(
+              Icons.settings,
+              color: Color(0xFFDC143C),
+            ),
+            title: Text(
+              'Settings',
+              style: TextStyle(color: Color(0xFFDC143C)),
+            ),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
@@ -254,14 +301,21 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.help),
-            title: const Text('Help & Feedback'),
+            leading: const Icon(
+              Icons.help,
+              color: Color(0xFFDC143C),
+            ),
+            title: Text(
+              'Help & Feedback',
+              style: TextStyle(color: Color(0xFFDC143C)),
+            ),
             onTap: () {
               Navigator.pop(context);
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const HelpFeedbackPage()),
+                  builder: (context) => const HelpFeedbackPage(),
+                ),
               );
             },
           ),

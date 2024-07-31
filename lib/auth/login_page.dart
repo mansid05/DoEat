@@ -59,27 +59,6 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('LOGIN', style: TextStyle(color: Color(0xFFDC143C))),
-        leading: IconButton(
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Color(0xFFDC143C), // Crimson color for back arrow
-          ),
-          onPressed: () {
-            Navigator.of(context).pop(); // Navigate back
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(
-              Icons.admin_panel_settings,
-              color: Color(0xFFDC143C), // Crimson color for admin icon
-            ),
-            onPressed: () {
-              // Navigate to admin login page or perform admin login logic
-              _adminLogin();
-            },
-          ),
-        ],
       ),
       body: Stack(
         children: [
